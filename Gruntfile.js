@@ -119,5 +119,5 @@ module.exports = function(grunt) {
     grunt.registerTask('release', ['cssmin:build', 'concat:build', 'jshint', 'uglify:build', 'createhtml_release']);
     grunt.registerTask('debug', ['cssmin:build', 'concat:build', 'jshint', 'uglify:build', 'createhtml_debug']);
 
-    grunt.registerTask('default', ['release', 'debug', 'copy:release', 'copy:release_debug']);
+    grunt.registerTask('default', ['release', 'debug']);
 };
