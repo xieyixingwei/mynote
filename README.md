@@ -1,10 +1,16 @@
 # mywiki
+
 This is a markdown translation tool implemented entirely in javascript
+
+## Requirements
+
+[Requirements](requirements.md)
 
 ## Build guid
 
-1. only run `npm install` once
+1. just run `npm install` once
 
 2. run `grunt` to build the project
 
 3. the release images are in `build` directory
+
