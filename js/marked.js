@@ -131,8 +131,8 @@ $.md.InlineLexer.prototype.lex = function(src) {
 
     while(src) {
         $.each(this.tokenObjs, handle);
-        if(i++ > 1000)
-            return out;
+        //if(i++ > 1000)
+        //    return out;
     }
 
     return out;
@@ -448,8 +448,8 @@ $.md.BlockLexer.prototype.lex = function(src) {
     while(src) {
         $.each(this.tokenObjs, handle);
 
-        if(i++ > 1000)
-            return uglyHtml;
+        //if(i++ > 1000)
+        //    return uglyHtml;
     }
 
     return uglyHtml;

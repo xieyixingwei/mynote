@@ -49,5 +49,7 @@ above output.
 
 - 包含其它markdown
 
-[include](include.md)
+[include](./include.md)
+[include](./include1.md)
+
 

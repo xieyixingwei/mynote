@@ -469,8 +469,8 @@ $.md.InlineLexer.prototype.lex = function(src) {
 
     while(src) {
         $.each(this.tokenObjs, handle);
-        if(i++ > 1000)
-            return out;
+        //if(i++ > 1000)
+        //    return out;
     }
 
     return out;
@@ -786,8 +786,8 @@ $.md.BlockLexer.prototype.lex = function(src) {
     while(src) {
         $.each(this.tokenObjs, handle);
 
-        if(i++ > 1000)
-            return uglyHtml;
+        //if(i++ > 1000)
+        //    return uglyHtml;
     }
 
     return uglyHtml;
@@ -964,10 +964,12 @@ $.md.stages.stage('init').subscribe( function( done ) {
 } );
 
 $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
+    console.time('load ' + $.md.mainHref);
     $.ajax( {
         url: $.md.mainHref,
         dataType: 'text'
     } ).done( function( data ) {
+        console.timeEnd('load ' + $.md.mainHref);
         $.md.mdText = data;
         console.log('Get ' + $.md.mainHref);
     } ).fail( function() {
@@ -979,15 +981,24 @@ $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
 
 $.md.stages.stage('transform').subscribe( function( done ) {
 
+    console.time('mardked '+$.md.mainHref);
     $.md.htmlText = $.md.marked($.md.mdText);
+    console.timeEnd('mardked '+$.md.mainHref);
 
-    loadExternalIncludes($.md.htmlText).always( function() {
-        done();
+    // Handle up to 3 nests
+    loadExternalIncludes().always( function() {
+        loadExternalIncludes().always( function() {
+            loadExternalIncludes().always( function() {
+                done();
+            } );
+        } );
     } );
 } );
 
 $.md.stages.stage('show').subscribe( function( done ) {
+    console.time('toc time');
     $.md.htmlText = $.md.tableOfContents($.md.htmlText);
+    console.timeEnd('toc time');
     $('#md-content').html($.md.htmlText);
     $('html').removeClass('md-hidden-load');
     $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
@@ -1015,22 +1026,18 @@ function loadExternalIncludes() {
         var $el = $(e);
         var href = $el.attr('href');
         var text = $el.toptext();
-
+        console.time('load ' + href);
         $.ajax( {
             url: href,
             dataType: 'text'
         } ).done( function( data ) {
+            console.timeEnd('load ' + href);
+            console.time('marked ' + href);
             var $html = $($.md.marked(data));
+            console.timeEnd('marked ' + href);
             $html.insertAfter($el);
             $el.remove();
             $.md.htmlText = $mdHtml.html();
-            var includes = findExternalIncludes($mdHtml);
-            if ( includes.length > 0 ) {
-                dfd.countUp();
-                loadExternalIncludes().always( function() {
-                    dfd.countDown();
-                } );
-            }
         } ).always( function() {
             dfd.countDown();
         } );
@@ -1092,6 +1099,7 @@ function appendDefaultFilenameToHash () {
 }
 
 $(document).ready(function () {
+    console.time('all time');
     appendDefaultFilenameToHash();
     extractHashData();
 
@@ -1101,6 +1109,7 @@ $(document).ready(function () {
 
     $.md.stages.run().done( function() {
         console.log('all done');
+        console.timeEnd('all time');
     } );
 } );
 
