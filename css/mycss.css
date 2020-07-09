@@ -135,7 +135,50 @@ aside.toc {
     font-size: 14px;
 }
 
-a:link { text-decoration: none; color: rgb(58, 119, 233)}
-a:active { text-decoration:blink}
-a:hover { text-decoration:underline; color: rgb(130, 185, 236)} 
-a:visited { text-decoration: none; color: rgb(58, 119, 233)}
+span.md.olli {
+    padding-right: 8px;
+    font-weight: bolder;
+    font-size: 18px;
+    color: #3D7E9A;
+}
+
+ul.md.ollist{
+    list-style: none;
+    list-style-type: none;
+    padding-left: 24px;
+    margin-left: 0px;
+}
+
+a:link {
+    text-decoration: none;
+    color: rgb(58, 119, 233);
+}
+a:active {
+    text-decoration: blink;
+}
+a:hover {
+    text-decoration: underline;
+    color: rgb(130, 185, 236);
+} 
+a:visited {
+    text-decoration: none;
+    color: rgb(58, 119, 233);
+}
+
+ul.toc {
+    margin-left: 24px;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-right:0;
+    padding-left: 0px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+a.toc, li.toc {
+    margin-top: -6px;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}

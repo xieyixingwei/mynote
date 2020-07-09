@@ -30,12 +30,6 @@ var publicMethods = {
         });
         return result;
     },
-
-    wait: function(time) {
-        return $.Deferred(function(dfd) {
-            setTimeout(dfd.resolve, time);
-        });
-    }
 };
 
 $.md.util = $.extend ({}, $.md.util, publicMethods);

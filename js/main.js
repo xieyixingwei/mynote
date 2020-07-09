@@ -6,130 +6,113 @@
  * main.js
  */
 
-function initStages() {
-    $.md.stages = [
-        $.Stage('init'),
-
-        // loads config, initial markdown and navigation
-        $.Stage('load'),
-
-        // will transform the markdown to html
-        $.Stage('transform'),
-    ];
-
-    $.md.stage = function(name) {
-        var m = $.grep($.md.stages, function(e, i) {
-            return e.name === name;
-        });
-        if(m.length === 0) {
-            console.log('A stage by name ' + name + '  does not exist');
-        }else {
-            return m[0];
-        }
-    };
-}
-
-initStages();
-
-function resetStages() {
-    var old_stages = $.md.stages;
-    $.md.stages = [];
-    $(old_stages).each(function(i, e) {
-        $.md.stages.push($.Stage(e.name));
-    });
-}
-
 var publicMethods = {};
 $.md.publicMethods = $.extend ({}, $.md.publicMethods, publicMethods);
 
-function transformMarkdown (markdown) {
-    // get sample markdown
-    var uglyHtml = $.md.marked(markdown);
-    uglyHtml = $.md.tableOfContents(uglyHtml);
-    return uglyHtml;
-}
+$.md.stages = new $.Stages(['init', 'loadmarkdown', 'transform', 'show']);
 
-function registerFetchConfig() {
-    $.md.stage('init').subscribe(function(done) {
-        $.ajax({url: './config.json', dataType: 'text'}).done(function(data) {
-            try {
-                var data_json = JSON.parse(data);
-                $.md.config = $.extend($.md.config, data_json);
-                console.log('Found a valid config.json file, using configuration');
-            } catch(err) {
-                console.log('config.json was not JSON parsable: ' + err);
-            }
-            done();
-        }).fail(function(err, textStatus) {
-            console.log('unable to retrieve config.json: ' + textStatus);
-            done();
+$.md.stages.stage('init').subscribe( function( done ) {
+    $('#md-all').empty();
+    var skel = `<div id="md-body">
+                    <div id="md-title"></div>
+                    <div id="md-menu"></div>
+                    <div id="md-content"></div>
+                </div>`;
+    $('#md-all').prepend($(skel));
+    done();
+} ).subscribe( function( done ) {
+    $.ajax( {
+        url: './config.json',
+        dataType: 'text'
+    } ).done( function( data ) {
+        try {
+            var data_json = JSON.parse(data);
+            $.md.config = $.extend($.md.config, data_json);
+            console.log('Found a valid config.json file, using configuration');
+        } catch(err) {
+            console.log('config.json was not JSON parsable: ' + err);
+        }
+    } ).fail( function( err, textStatus ) {
+        console.log('unable to retrieve config.json: ' + textStatus);
+    } ).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('loadmarkdown').subscribe( function( done ) {
+    $.ajax( {
+        url: $.md.mainHref,
+        dataType: 'text'
+    } ).done( function( data ) {
+        $.md.mdText = data;
+        console.log('Get ' + $.md.mainHref);
+    } ).fail( function() {
+        console.log('Could not get ' + $.md.mainHref);
+    } ).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('transform').subscribe( function( done ) {
+
+    $.md.htmlText = $.md.marked($.md.mdText);
+
+    loadExternalIncludes($.md.htmlText).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('show').subscribe( function( done ) {
+    $.md.htmlText = $.md.tableOfContents($.md.htmlText);
+    $('#md-content').html($.md.htmlText);
+    $('html').removeClass('md-hidden-load');
+    $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
+    done();
+});
+
+// load [include](/foo/bar.md) external links
+function loadExternalIncludes() {
+    var $mdHtml = $(`<div>${$.md.htmlText}</div>`);
+
+    function findExternalIncludes ($html) {
+        return $html.find('a').filter (function () {
+            var href = $(this).attr('href');
+            var text = $(this).toptext();
+            var isMarkdown = $.md.util.hasMarkdownFileExtension(href);
+            var isInclude = text === 'include';
+            return isInclude && isMarkdown;
         });
-    });
-}
+    }
 
-function registerFetchMarkdown() {
-    var md = '';
-    $.md.stage('init').subscribe(function(done) {
-        $.ajax({
-            url: $.md.mainHref,
+    var includeLinks = findExternalIncludes ($mdHtml);
+    var dfd = $.DeferredCount(includeLinks.length);
+
+    includeLinks.each( function( i, e ) {
+        var $el = $(e);
+        var href = $el.attr('href');
+        var text = $el.toptext();
+
+        $.ajax( {
+            url: href,
             dataType: 'text'
-        }).done(function(data) {
-            md = data;
-            console.log('Get ' + $.md.mainHref);
-            done();
-        }).fail(function() {
-            console.log('Could not get ' + $.md.mainHref);
-            done();
-        });
+        } ).done( function( data ) {
+            var $html = $($.md.marked(data));
+            $html.insertAfter($el);
+            $el.remove();
+            $.md.htmlText = $mdHtml.html();
+            var includes = findExternalIncludes($mdHtml);
+            if ( includes.length > 0 ) {
+                dfd.countUp();
+                loadExternalIncludes().always( function() {
+                    dfd.countDown();
+                } );
+            }
+        } ).always( function() {
+            dfd.countDown();
+        } );
     });
 
-    $.md.stage('transform').subscribe(function(done) {
-        var uglyHtml = transformMarkdown(md);
-        $('#md-content').html(uglyHtml);
-        $('html').removeClass('md-hidden-load');
-        $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
-        //md = '';
-        //var dfd = $.Deferred();
-        //loadExternalIncludes(dfd);
-        //dfd.always(function () {
-        done();
-        //});
-    });
-}
-
-function registerClearContent() {
-    $.md.stage('init').subscribe(function(done) {
-        $('#md-all').empty();
-        var skel = `<div id="md-body">
-                        <div id="md-title"></div>
-                        <div id="md-menu"></div>
-                        <div id="md-content"></div>
-                    </div>`;
-        $('#md-all').prepend($(skel));
-        done();
-    });
-}
-
-function loadContent(href) {
-    registerFetchMarkdown();
-    registerClearContent();
-
-    runStages();
-}
-
-function runStages() {
-    // wire the stages up
-    $.md.stage('init').done(function() {
-        $.md.stage('load').run();
-    });
-
-    $.md.stage('load').done(function() {
-        $.md.stage('transform').run();
-    });
-
-    // trigger the whole process by runing the init stage
-    $.md.stage('init').run();
-    return;
+    return dfd;
 }
 
 function extractHashData() {
@@ -185,7 +168,6 @@ function appendDefaultFilenameToHash () {
 }
 
 $(document).ready(function () {
-    registerFetchConfig();
     appendDefaultFilenameToHash();
     extractHashData();
 
@@ -193,7 +175,9 @@ $(document).ready(function () {
         window.location.reload(false);
     });
 
-    loadContent($.md.mainHref);
-});
+    $.md.stages.run().done( function() {
+        console.log('all done');
+    } );
+} );
 
-}(jQuery));
+} ( jQuery ) );

@@ -148,10 +148,53 @@ aside.toc {
     font-size: 14px;
 }
 
-a:link { text-decoration: none; color: rgb(58, 119, 233)}
-a:active { text-decoration:blink}
-a:hover { text-decoration:underline; color: rgb(130, 185, 236)} 
-a:visited { text-decoration: none; color: rgb(58, 119, 233)}
+span.md.olli {
+    padding-right: 8px;
+    font-weight: bolder;
+    font-size: 18px;
+    color: #3D7E9A;
+}
+
+ul.md.ollist{
+    list-style: none;
+    list-style-type: none;
+    padding-left: 24px;
+    margin-left: 0px;
+}
+
+a:link {
+    text-decoration: none;
+    color: rgb(58, 119, 233);
+}
+a:active {
+    text-decoration: blink;
+}
+a:hover {
+    text-decoration: underline;
+    color: rgb(130, 185, 236);
+} 
+a:visited {
+    text-decoration: none;
+    color: rgb(58, 119, 233);
+}
+
+ul.toc {
+    margin-left: 24px;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-right:0;
+    padding-left: 0px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+a.toc, li.toc {
+    margin-top: -6px;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
 </style><!-- END css/mycss.css -->
 <!-- START build/mywiki.js -->
 <script type="text/javascript">/* jshint esversion: 6 */
@@ -231,12 +274,6 @@ var publicMethods = {
         });
         return result;
     },
-
-    wait: function(time) {
-        return $.Deferred(function(dfd) {
-            setTimeout(dfd.resolve, time);
-        });
-    }
 };
 
 $.md.util = $.extend ({}, $.md.util, publicMethods);
@@ -268,91 +305,235 @@ $.md.util.getInpageAnchorText = function (text) {
 
 }(jQuery));
 
-(function($) {
+( function( $ ) {
 
 'use strict';
 
 /**
- * stage.js 
+ * Return a Deferred object which will be resolved after timeout ms.
+ * @timeout the unit is ms.
  */
+$.DeferredWait = function (timeout) {
+    return $.Deferred( function( dfd ) {
+        // wait for ms to call dfd.resolve()
+        setTimeout( dfd.resolve, timeout );
+    } );
+};
 
-$.Stage = function(name) {
+/**
+ * Return a countable Deferred object which will be resolved when the number of countDown() calls reaches count.
+ * @count the number of countDown() calls.
+ * @min the bottom value of count which default is 0.
+ */
+$.DeferredCount = function ( count, min ) {
+    min = min || 0;
+    var dfd = $.Deferred();
+    dfd.count = count;
+
+    if ( dfd.count <= min ) {
+        dfd.resolve();
+    }
+
+    dfd.countDown = function () {
+        dfd.count--;
+        if ( dfd.count <= min ) {
+            dfd.resolve();
+        }
+    };
+
+    dfd.countUp = function () {
+        dfd.count++;
+    };
+    return dfd;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Define Stage object, it is a extend Defferred object.
+ * 
+ * @name <string> this stage's name.
+ * @time <number> the unit is ms, specify this timeout of current stage.
+ * 
+ * Public fucntions:
+ *     reset()
+ *     subscribe(fn)
+ *     unsubscribe(fn)
+ *     run()
+ * 
+ * @fn is function which must invok the done() when it end. for example:
+ *      function fn( done ) {
+ *            $.ajax( {
+ *               url: 'index.md',
+ *               dataType: 'text'
+ *           } ).done( function( data ) {
+ *               done();
+ *           } );
+ *      }
+ */
+$.Stage = function( name, timeout) {
+
+    // Define a defer object
     var self = $.extend($.Deferred(), {});
+
+    self.done( function() {
+        console.log('stage ' + self.name + ' completed successfully.');
+    } );
+
+    self.fail(function() {
+        console.log('stage ' + self.name + ' completed with errors!');
+    } );
+
     self.name = name;
-    self.events = [];
+    self.timeout = timeout || 3000;
+    self.funcs = [];
     self.started = false;
 
-    self.reset = function() {
+    self.reset = function () {
         self.complete = $.Deferred();
         self.outstanding = [];
     };
 
     self.reset();
 
-    self.subscribe = function(fn) {
+    // Register a function to the current stage.
+    // @fn fn is function which must invok the done() when it end. for example
+    self.subscribe = function ( fn ) {
         if (self.started) {
             console.log('Subscribing to stage which already started!');
+            return;
         }
-        self.events.push(fn);
+        self.funcs.push(fn);
+        return this;
     };
 
-    self.unsubscribe = function(fn) {
-        self.events.remove(fn);
+    // Unregister a function from the current stage.
+    self.unsubscribe = function ( fn ) {
+        self.funcs.remove(fn);
+        return this;
     };
 
-    self.executeSubscribedFn = function (fn) {
+    // Execute the fn
+    self._executeFn = function ( fn ) {
         var d = $.Deferred();
         self.outstanding.push(d);
 
-        // display an error if our done() callback is not called
-        $.md.util.wait(2500).done(function() {
-            if(d.state() !== 'resolved') {
+        // Display an error if our done() callback is not called
+        $.DeferredWait(self.timeout).done( function() {
+            if ( d.state() !== 'resolved' ) {
                 console.log('Timeout reached for done callback in stage: ' + self.name +
                     '. Did you forget a done() call in a .subscribe() ?');
                 console.log('stage ' + name + ' failed running subscribed function: ' + fn );
             }
-        });
+            // d.resolve();
+        } );
 
-        var done = function() {
+        var done = function done() {
             d.resolve();
         };
 
-        fn(done);
+        fn( done );
     };
 
+    // It will cyclically excute the functions subscribed in this stage.
     self.run = function() {
         self.started = true;
-        $(self.events).each(function (i, fn) {
-            self.executeSubscribedFn(fn);
-        });
 
-        // if no events are in our queue, we resolve immediately
-        if(self.outstanding.length === 0) {
+        $(self.funcs).each( function ( i, fn ) {
+            self._executeFn(fn);
+        } );
+
+        // If no funcs are in our queue, we resolve immediately
+        if (self.outstanding.length === 0) {
             self.resolve();
         }
 
-        // we resolve when all our registered events have completed
-        $.when.apply($, self.outstanding)
-        .done(function() {
+        // We resolve when all our registered funcs have completed
+        $.when.apply( $, self.outstanding
+            ).done( function() {
             self.resolve();
-        })
-        .fail(function() {
+        } ).fail(function() {
             self.resolve();
-        });
+        } );
     };
 
-    self.done(function() {
-        console.log('stage ' + self.name + ' completed successfully.');
-    });
-
-    self.fail(function() {
-        console.log('stage ' + self.name + ' completed with errors!');
-    });
-
     return self;
+}; // $.Stage end
+
+//----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Define a States object to manage muti stages.
+ * Public functions:
+ *     register(stageNameList)
+ *     stage(stageName)
+ *     reset()
+ *     run()
+ */
+$.Stages = function( stageNameList ) {
+    this.stages = [];
+    this.register(stageNameList);
 };
 
-}(jQuery));
+// Register a stage
+// @stageNameList list<string> stage name
+$.Stages.prototype.register = function( stageNameList ) {
+    var self = this;
+    $(stageNameList).each( function( i, e ) {
+        var s = $.Stage(e);
+        var end = self.stages.slice(-1);
+        if(end.length > 0) {
+            end[0].done( function() {
+                s.run();
+            } );
+        }
+        self.stages.push(s);
+    } );
+};
+
+// return a stage by stageName
+// @stageName <string>
+$.Stages.prototype.stage = function( stageName ) {
+    var stages = $.grep(this.stages, function( e, i ) {
+        return e.name === stageName;
+    } );
+
+    if ( stages.length === 0 ) {
+        console.log('A stage by name ' + stageName + '  does not exist');
+        return undefined;
+    } else if ( stages.length > 1 ) {
+        console.log('There are muti same name ' + stageName + '  stages exist');
+    }
+
+    return stages[0];
+};
+
+// Reset current stages, this will clear the func of stage, but only keep the stage.
+$.Stages.prototype.reset = function() {
+    var self = this;
+    var oldStages = self.stages;
+    self.stages = [];
+    $(oldStages).each( function( i, e ) {
+        self.stages.push($.Stage(e.name));
+    });
+};
+
+// Run stages registered and return a Differed object.
+$.Stages.prototype.run = function() {
+    var self = this;
+    var dfd = $.Deferred();
+
+    self.stages.slice(-1)[0].done( function() {
+        dfd.resolve();
+    } );
+
+    // Run the first stage.
+    self.stages[0].run();
+    return dfd;
+};
+// $.Stages end
+
+} ( jQuery ) );
 
 (function($) {
 
@@ -421,7 +602,9 @@ var inline_link = {
     handle: function (cap) {
         let href = cap[2],
             text = cap[1];
-            if($.md.util.hasMarkdownFileExtension(href))
+            if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
+                return `<a class="md" href="${$.md.href + href}">${text}</a>`;
+            else if($.md.util.hasMarkdownFileExtension(href))
                 return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
             else if(href.startsWith('www') || href.startsWith('http'))
                 return `<a class="md" href="${href}">${text}</a>`;
@@ -436,7 +619,7 @@ var inline_link = {
  * Inline Lexer & Compiler
  */
   
-$.md.InlineLexer = function (options) {
+$.md.InlineLexer = function InlineLexer(options) {
     this.tokenObjs = [];
     this.is_inited = false;
     this.init();
@@ -506,10 +689,10 @@ function replace(regex, opt) {
 }
 
 var block_space = {
-    rule: /^\n{1}/,
+    rule: /^\n+/,
     handle: function (cap, inline) {
         if(cap[0].length > 0) {
-            return '<br/>\n';
+            return '';
         }
     }
 };
@@ -576,8 +759,18 @@ var block_image = {
     }
 };
 
+var block_code = {
+    rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n*|$)/,
+    handle: function (cap, inline) {
+        let code = cap[3];
+        code = code.replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;');
+        return `<pre class="md">${code}</pre>\n`;
+    }
+};
+
 var block_paragraph = {
-    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image))+)(?:\n|$)/,
+    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code))+)(?:\n+|$)/,
     handle: function (cap, inline) {
         let text = cap[0];
         return `<p class="md">${inline.lex(text)}</p>\n`;
@@ -589,7 +782,8 @@ block_paragraph.rule = replace(block_paragraph.rule)
 ('lheading', block_lheading.rule)
 ('hr', block_hr.rule)
 ('blockquote', block_blockquote.rule)
-('blockquote', block_image.rule)
+('image', block_image.rule)
+('code', block_code.rule)
 ();
 
 var block_table = {
@@ -698,14 +892,18 @@ var block_list = {
 
             let itemsOut = '';
             let out = '';
+            let isOl = false;
 
-            if(/^\d+\./.exec(items[0].prefix))
-                out = '<ol class="md">&items;</ol>\n';
+            if(/^\d+\./.exec(items[0].prefix)) {
+                isOl = true;
+                out = '<ul class="md ollist">&items;</ul>\n'; //'<ol class="md">&items;</ol>\n';
+            }
             else if (/^[-+*]/.exec(items[0].prefix))
                 out = '<ul class="md">&items;</ul>\n';
 
             for(let i of items) {
-                itemsOut += `<li>${inline.lex(i.text)}\n${list(i.children)}</li>\n`;        
+                var order = isOl ? `<span class="md olli">${i.prefix}</span>` :'';
+                itemsOut += `<li>${order}${inline.lex(i.text)}\n${list(i.children)}</li>\n`;        
             }
 
             return out.replace('&items;', itemsOut);
@@ -715,17 +913,6 @@ var block_list = {
         return list(items);
     }
 };
-
-var block_code = {
-    rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n+|$)/,
-    handle: function (cap, inline) {
-        let code = cap[3];
-        code = code.replace(/</g, '&lt;')
-                   .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
-    }
-};
-
 
 /**
  * Block Lexer
@@ -889,10 +1076,10 @@ $.md.tableOfContents = function (htmlSrc) {
         }
 
         let itemsOut = '';
-        let out = '<ul>items</ul>\n';
+        let out = '<ul class="toc">items</ul>\n';
 
         for(let i of items) {
-            itemsOut += `<li><a href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n${list(i.children)}</li>\n`;        
+            itemsOut += `<li class="toc"><a class="toc" href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n${list(i.children)}</li>\n`;        
         }
 
         return out.replace('items', itemsOut);
@@ -942,130 +1129,113 @@ $.md.tableOfContents.scrollToInPageAnchor = function(anchorText) {
  * main.js
  */
 
-function initStages() {
-    $.md.stages = [
-        $.Stage('init'),
-
-        // loads config, initial markdown and navigation
-        $.Stage('load'),
-
-        // will transform the markdown to html
-        $.Stage('transform'),
-    ];
-
-    $.md.stage = function(name) {
-        var m = $.grep($.md.stages, function(e, i) {
-            return e.name === name;
-        });
-        if(m.length === 0) {
-            console.log('A stage by name ' + name + '  does not exist');
-        }else {
-            return m[0];
-        }
-    };
-}
-
-initStages();
-
-function resetStages() {
-    var old_stages = $.md.stages;
-    $.md.stages = [];
-    $(old_stages).each(function(i, e) {
-        $.md.stages.push($.Stage(e.name));
-    });
-}
-
 var publicMethods = {};
 $.md.publicMethods = $.extend ({}, $.md.publicMethods, publicMethods);
 
-function transformMarkdown (markdown) {
-    // get sample markdown
-    var uglyHtml = $.md.marked(markdown);
-    uglyHtml = $.md.tableOfContents(uglyHtml);
-    return uglyHtml;
-}
+$.md.stages = new $.Stages(['init', 'loadmarkdown', 'transform', 'show']);
 
-function registerFetchConfig() {
-    $.md.stage('init').subscribe(function(done) {
-        $.ajax({url: './config.json', dataType: 'text'}).done(function(data) {
-            try {
-                var data_json = JSON.parse(data);
-                $.md.config = $.extend($.md.config, data_json);
-                console.log('Found a valid config.json file, using configuration');
-            } catch(err) {
-                console.log('config.json was not JSON parsable: ' + err);
-            }
-            done();
-        }).fail(function(err, textStatus) {
-            console.log('unable to retrieve config.json: ' + textStatus);
-            done();
+$.md.stages.stage('init').subscribe( function( done ) {
+    $('#md-all').empty();
+    var skel = `<div id="md-body">
+                    <div id="md-title"></div>
+                    <div id="md-menu"></div>
+                    <div id="md-content"></div>
+                </div>`;
+    $('#md-all').prepend($(skel));
+    done();
+} ).subscribe( function( done ) {
+    $.ajax( {
+        url: './config.json',
+        dataType: 'text'
+    } ).done( function( data ) {
+        try {
+            var data_json = JSON.parse(data);
+            $.md.config = $.extend($.md.config, data_json);
+            console.log('Found a valid config.json file, using configuration');
+        } catch(err) {
+            console.log('config.json was not JSON parsable: ' + err);
+        }
+    } ).fail( function( err, textStatus ) {
+        console.log('unable to retrieve config.json: ' + textStatus);
+    } ).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('loadmarkdown').subscribe( function( done ) {
+    $.ajax( {
+        url: $.md.mainHref,
+        dataType: 'text'
+    } ).done( function( data ) {
+        $.md.mdText = data;
+        console.log('Get ' + $.md.mainHref);
+    } ).fail( function() {
+        console.log('Could not get ' + $.md.mainHref);
+    } ).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('transform').subscribe( function( done ) {
+
+    $.md.htmlText = $.md.marked($.md.mdText);
+
+    loadExternalIncludes($.md.htmlText).always( function() {
+        done();
+    } );
+} );
+
+$.md.stages.stage('show').subscribe( function( done ) {
+    $.md.htmlText = $.md.tableOfContents($.md.htmlText);
+    $('#md-content').html($.md.htmlText);
+    $('html').removeClass('md-hidden-load');
+    $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
+    done();
+});
+
+// load [include](/foo/bar.md) external links
+function loadExternalIncludes() {
+    var $mdHtml = $(`<div>${$.md.htmlText}</div>`);
+
+    function findExternalIncludes ($html) {
+        return $html.find('a').filter (function () {
+            var href = $(this).attr('href');
+            var text = $(this).toptext();
+            var isMarkdown = $.md.util.hasMarkdownFileExtension(href);
+            var isInclude = text === 'include';
+            return isInclude && isMarkdown;
         });
-    });
-}
+    }
 
-function registerFetchMarkdown() {
-    var md = '';
-    $.md.stage('init').subscribe(function(done) {
-        $.ajax({
-            url: $.md.mainHref,
+    var includeLinks = findExternalIncludes ($mdHtml);
+    var dfd = $.DeferredCount(includeLinks.length);
+
+    includeLinks.each( function( i, e ) {
+        var $el = $(e);
+        var href = $el.attr('href');
+        var text = $el.toptext();
+
+        $.ajax( {
+            url: href,
             dataType: 'text'
-        }).done(function(data) {
-            md = data;
-            console.log('Get ' + $.md.mainHref);
-            done();
-        }).fail(function() {
-            console.log('Could not get ' + $.md.mainHref);
-            done();
-        });
+        } ).done( function( data ) {
+            var $html = $($.md.marked(data));
+            $html.insertAfter($el);
+            $el.remove();
+            $.md.htmlText = $mdHtml.html();
+            var includes = findExternalIncludes($mdHtml);
+            if ( includes.length > 0 ) {
+                dfd.countUp();
+                loadExternalIncludes().always( function() {
+                    dfd.countDown();
+                } );
+            }
+        } ).always( function() {
+            dfd.countDown();
+        } );
     });
 
-    $.md.stage('transform').subscribe(function(done) {
-        var uglyHtml = transformMarkdown(md);
-        $('#md-content').html(uglyHtml);
-        $('html').removeClass('md-hidden-load');
-        $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
-        //md = '';
-        //var dfd = $.Deferred();
-        //loadExternalIncludes(dfd);
-        //dfd.always(function () {
-        done();
-        //});
-    });
-}
-
-function registerClearContent() {
-    $.md.stage('init').subscribe(function(done) {
-        $('#md-all').empty();
-        var skel = `<div id="md-body">
-                        <div id="md-title"></div>
-                        <div id="md-menu"></div>
-                        <div id="md-content"></div>
-                    </div>`;
-        $('#md-all').prepend($(skel));
-        done();
-    });
-}
-
-function loadContent(href) {
-    registerFetchMarkdown();
-    registerClearContent();
-
-    runStages();
-}
-
-function runStages() {
-    // wire the stages up
-    $.md.stage('init').done(function() {
-        $.md.stage('load').run();
-    });
-
-    $.md.stage('load').done(function() {
-        $.md.stage('transform').run();
-    });
-
-    // trigger the whole process by runing the init stage
-    $.md.stage('init').run();
-    return;
+    return dfd;
 }
 
 function extractHashData() {
@@ -1121,7 +1291,6 @@ function appendDefaultFilenameToHash () {
 }
 
 $(document).ready(function () {
-    registerFetchConfig();
     appendDefaultFilenameToHash();
     extractHashData();
 
@@ -1129,10 +1298,12 @@ $(document).ready(function () {
         window.location.reload(false);
     });
 
-    loadContent($.md.mainHref);
-});
+    $.md.stages.run().done( function() {
+        console.log('all done');
+    } );
+} );
 
-}(jQuery));
+} ( jQuery ) );
 </script>
 <!-- END build/mywiki.js -->
 

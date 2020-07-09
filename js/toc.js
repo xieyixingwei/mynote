@@ -57,10 +57,10 @@ $.md.tableOfContents = function (htmlSrc) {
         }
 
         let itemsOut = '';
-        let out = '<ul>items</ul>\n';
+        let out = '<ul class="toc">items</ul>\n';
 
         for(let i of items) {
-            itemsOut += `<li><a href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n${list(i.children)}</li>\n`;        
+            itemsOut += `<li class="toc"><a class="toc" href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n${list(i.children)}</li>\n`;        
         }
 
         return out.replace('items', itemsOut);

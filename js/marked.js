@@ -65,7 +65,9 @@ var inline_link = {
     handle: function (cap) {
         let href = cap[2],
             text = cap[1];
-            if($.md.util.hasMarkdownFileExtension(href))
+            if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
+                return `<a class="md" href="${$.md.href + href}">${text}</a>`;
+            else if($.md.util.hasMarkdownFileExtension(href))
                 return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
             else if(href.startsWith('www') || href.startsWith('http'))
                 return `<a class="md" href="${href}">${text}</a>`;
@@ -80,7 +82,7 @@ var inline_link = {
  * Inline Lexer & Compiler
  */
   
-$.md.InlineLexer = function (options) {
+$.md.InlineLexer = function InlineLexer(options) {
     this.tokenObjs = [];
     this.is_inited = false;
     this.init();
@@ -150,10 +152,10 @@ function replace(regex, opt) {
 }
 
 var block_space = {
-    rule: /^\n{1}/,
+    rule: /^\n+/,
     handle: function (cap, inline) {
         if(cap[0].length > 0) {
-            return '<br/>\n';
+            return '';
         }
     }
 };
@@ -220,8 +222,18 @@ var block_image = {
     }
 };
 
+var block_code = {
+    rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n*|$)/,
+    handle: function (cap, inline) {
+        let code = cap[3];
+        code = code.replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;');
+        return `<pre class="md">${code}</pre>\n`;
+    }
+};
+
 var block_paragraph = {
-    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image))+)(?:\n|$)/,
+    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code))+)(?:\n+|$)/,
     handle: function (cap, inline) {
         let text = cap[0];
         return `<p class="md">${inline.lex(text)}</p>\n`;
@@ -233,7 +245,8 @@ block_paragraph.rule = replace(block_paragraph.rule)
 ('lheading', block_lheading.rule)
 ('hr', block_hr.rule)
 ('blockquote', block_blockquote.rule)
-('blockquote', block_image.rule)
+('image', block_image.rule)
+('code', block_code.rule)
 ();
 
 var block_table = {
@@ -342,14 +355,18 @@ var block_list = {
 
             let itemsOut = '';
             let out = '';
+            let isOl = false;
 
-            if(/^\d+\./.exec(items[0].prefix))
-                out = '<ol class="md">&items;</ol>\n';
+            if(/^\d+\./.exec(items[0].prefix)) {
+                isOl = true;
+                out = '<ul class="md ollist">&items;</ul>\n'; //'<ol class="md">&items;</ol>\n';
+            }
             else if (/^[-+*]/.exec(items[0].prefix))
                 out = '<ul class="md">&items;</ul>\n';
 
             for(let i of items) {
-                itemsOut += `<li>${inline.lex(i.text)}\n${list(i.children)}</li>\n`;        
+                var order = isOl ? `<span class="md olli">${i.prefix}</span>` :'';
+                itemsOut += `<li>${order}${inline.lex(i.text)}\n${list(i.children)}</li>\n`;        
             }
 
             return out.replace('&items;', itemsOut);
@@ -359,17 +376,6 @@ var block_list = {
         return list(items);
     }
 };
-
-var block_code = {
-    rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n+|$)/,
-    handle: function (cap, inline) {
-        let code = cap[3];
-        code = code.replace(/</g, '&lt;')
-                   .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
-    }
-};
-
 
 /**
  * Block Lexer
