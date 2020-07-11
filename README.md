@@ -6,11 +6,24 @@ This is a markdown translation tool implemented entirely in javascript
 
 [Requirements](requirements.md)
 
-## Build guid
+## Setup envirnoment
 
-1. just run `npm install` once
+1. First install grunt
 
-2. run `grunt` to build the project
+```
+$ sudo npm install -g grunt-cli
+```
 
-3. the release images are in `build` directory
+2. Second install uesed plugs 
+
+```
+$ cd mywiki/
+$ npm install
+``` 
+
+## Build target
+
+1. run `grunt` to build the project
+
+2. the release images are in `build` directory
 
