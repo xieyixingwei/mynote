@@ -3,25 +3,18 @@
 'use strict';
 
 /**
- * marked.js markdown translation 
+ * marked.js translate markdown to html
  */
 
-function escape(html, encode) {
-    return html;
-    /*
-    return html.replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#39;');
-    */
-}
-
+// plain text
 var inline_text = {
     rule: /^[\s\S]+?(?=([<!\[_*`]| {2,}\n|~~|$))/,
     handle: function (cap) {
-        return escape(cap[0]);
+        return cap[0];
     }
 };
 
+// line break  
 var inline_br = {
     rule: /^ {2,}\n(?!\s*$)/,
     handle: function (cap) {
@@ -29,6 +22,7 @@ var inline_br = {
     }
 };
 
+// ~~strikethrough~~
 var inline_del = {
     rule: /^~~([\s\S]*?)~~/,
     handle: function (cap) {
@@ -36,6 +30,7 @@ var inline_del = {
     }
 };
 
+// **emphasis**
 var inline_strong = {
     rule: /^\*\*([\s\S]*?)\*\*/,
     handle: function (cap) {
@@ -43,6 +38,7 @@ var inline_strong = {
     }
 };
 
+// *italic*
 var inline_italic = {
     rule: /^\*([\s\S]*?)\*/,
     handle: function (cap) {
@@ -50,6 +46,7 @@ var inline_italic = {
     }
 };
 
+// `code`
 var inline_code = {
     rule: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
     handle: function (cap) {
@@ -60,47 +57,42 @@ var inline_code = {
     }
 };
 
+// [include](include.md)
+// [...](link)
 var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
     handle: function (cap) {
-        let href = cap[2],
+        var href = cap[2],
             text = cap[1];
-            if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
-                return `<a class="md" href="${$.md.href + href}">${text}</a>`;
-            else if($.md.util.hasMarkdownFileExtension(href))
-                return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
-            else if(href.startsWith('www') || href.startsWith('http'))
-                return `<a class="md" href="${href}">${text}</a>`;
-            else if(href.startsWith('/'))
-                return `<a class="md" href="${href}">${text}</a>`;
-            else
-                return `<a class="md" href="${$.md.basePath + $.md.href + href}">${text}</a>`;
+        if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
+            return `<a class="md" href="${$.md.href + href}">${text}</a>`;
+        else if($.md.util.hasMarkdownFileExtension(href))
+            return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
+        else if(href.startsWith('www') || href.startsWith('http'))
+            return `<a class="md" href="${href}">${text}</a>`;
+        else if(href.startsWith('/'))
+            return `<a class="md" href="${href}">${text}</a>`;
+        else
+            return `<a class="md" href="${$.md.basePath + $.md.href + href}">${text}</a>`;
     }
 };
 
-/**
- * Inline Lexer & Compiler
- */
-  
-$.md.InlineLexer = function InlineLexer(options) {
+// Inline Lexer
+$.md.InlineLexer = function() {
     this.tokenObjs = [];
-    this.is_inited = false;
+    this.isInited = false;
     this.init();
 };
 
-/**
- * Register token object
- * tokenObj { rule: regular, hanle: func }
- */
+// Register token object
+// @tokenObj { rule: regular, hanle: func }
 $.md.InlineLexer.prototype.register = function(tokenObj) {
     this.tokenObjs.push(tokenObj);
 };
 
-/**
- * InlineLexer init
- */
+// InlineLexer init
 $.md.InlineLexer.prototype.init = function() {
-    if(this.is_inited)
+    if(this.isInited)
         return;
     this.register(inline_del);
     this.register(inline_strong);
@@ -109,30 +101,26 @@ $.md.InlineLexer.prototype.init = function() {
     this.register(inline_link);
     this.register(inline_br);
     this.register(inline_text);
-    this.is_inited = true;
+    this.isInited = true;
 };
 
-/**
- * Lexing/Compiling
- */
-$.md.InlineLexer.prototype.lex = function(src) {
-    let cap,
-        i = 0,
-        out = '';
-
-    let handle = function (i, tokenObj) {
-        cap = tokenObj.rule.exec(src);
-        if(cap) {
-            src = src.substring(cap[0].length);
-            out += tokenObj.handle(cap);
-            return false; // jump out current each loop
-        }
-    };
+// InlineLexer compile
+// @src     markdown plain text
+// @return  html text
+$.md.InlineLexer.prototype.compile = function(src) {
+    var cap,
+        out = '',
+        handle = function (i, tokenObj) {
+            cap = tokenObj.rule.exec(src);
+            if(cap) {
+                src = src.substring(cap[0].length);
+                out += tokenObj.handle(cap);
+                return false; // jump out current each loop
+            }
+        };
 
     while(src) {
         $.each(this.tokenObjs, handle);
-        //if(i++ > 1000)
-        //    return out;
     }
 
     return out;
@@ -151,50 +139,61 @@ function replace(regex, opt) {
     };
 }
 
+// blank line
 var block_space = {
     rule: /^\n+/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         if(cap[0].length > 0) {
             return '';
         }
     }
 };
 
+// # head level 1
+// ...
+// ###### head level 6
 var block_heading = {
     rule: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let level = cap[1].length,
             text = cap[2];
-        return `<h${level} class="md title">${inline.lex(text)}</h${level}>\n`;
+        return `<h${level} class="md title">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
 
+// line head
+// ===
 var block_lheading = {
     rule: /^([^\n]+)\n *(=|-){3,} *(?:\n+|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let text = cap[1];  
-        return `<p class="md lheading" >${inline.lex(text)}</p>\n`;
+        return `<p class="md lheading" >${self.inlineLexer.compile(text)}</p>\n`;
     }
 };
 
+// ---
+// ***
+// ___
 var block_hr = {
     rule: /^ *[-*_]{3,} *(?:\n+|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         return '<hr class="md" />\n';
     }
 };
 
+// > blockquote
 var block_blockquote = {
     rule: /^( *>[^\n]+(\n[^\n]+)*\n)+(?:\n|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let text = cap[0].replace(/^ *> ?/gm, '');
-        return `<blockquote class="md">${inline.lex(text)}</blockquote>\n`;
+        return `<blockquote class="md">${self.inlineLexer.compile(text)}</blockquote>\n`;
     }
 };
 
+// ![width:23px;height:25em;align:center](image)
 var block_image = {
     rule: /^ *!\[([^\[\]]*)\]\(([^\n]*)\)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let src = cap[2],
             atl = cap[1],
             width = '',
@@ -222,9 +221,12 @@ var block_image = {
     }
 };
 
+// ``` type
+// block_code
+// ```
 var block_code = {
     rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n*|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let code = cap[3];
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
@@ -232,26 +234,12 @@ var block_code = {
     }
 };
 
-var block_paragraph = {
-    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code))+)(?:\n+|$)/,
-    handle: function (cap, inline) {
-        let text = cap[0];
-        return `<p class="md">${inline.lex(text)}</p>\n`;
-    }
-};
-
-block_paragraph.rule = replace(block_paragraph.rule)
-('heading', block_heading.rule)
-('lheading', block_lheading.rule)
-('hr', block_hr.rule)
-('blockquote', block_blockquote.rule)
-('image', block_image.rule)
-('code', block_code.rule)
-();
-
+// tabletitle | column name | column name
+// :--        | :--:        | --:
+// cell       | cell        | cell
 var block_table = {
     rule: /^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         let header = cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
             align = cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
             rows = cap[3].replace(/\n$/, '').split('\n');
@@ -276,7 +264,7 @@ var block_table = {
         function assemble_thead(header, aligns) {
             let headHtml = '<thead><tr>';
             $(header).each(function (i, h){
-                headHtml += `<th align="${aligns[i]}">${inline.lex(h)}</th>`;
+                headHtml += `<th align="${aligns[i]}">${self.inlineLexer.compile(h)}</th>`;
             });
             headHtml += '</tr></thead>';
             return headHtml;
@@ -288,7 +276,7 @@ var block_table = {
                 bodyHtml += `<tr>`;
                 let cells = row.split('|');
                 $(cells).each(function (i, c){
-                    bodyHtml += `<td align="${aligns[i]}">${inline.lex(c)}</td>`;
+                    bodyHtml += `<td align="${aligns[i]}">${self.inlineLexer.compile(c)}</td>`;
                 });
                 bodyHtml += '</tr>';
             });
@@ -299,9 +287,14 @@ var block_table = {
     }
 };
 
+// - ul
+//   1. ol
+//   2. ol
+// - ul
+// - ul
 var block_list = {
     rule: /^(?: *(?:\d+\.|[-+*]) +[^\n]+(?:\n[^\n]+)*?\n)+(?:\n|$)/,
-    handle: function (cap, inline) {
+    handle: function (self, cap) {
         function pickup_items(src) {
             let reg = /^( *)(\d+\.|[-+*]) +([\s\S]*?)\n(?= *(\d+\.|[-+*]) +|$)/,
                 items = [],
@@ -366,7 +359,7 @@ var block_list = {
 
             for(let i of items) {
                 var order = isOl ? `<span class="md olli">${i.prefix}</span>` :'';
-                itemsOut += `<li>${order}${inline.lex(i.text)}\n${list(i.children)}</li>\n`;        
+                itemsOut += `<li>${order}${self.inlineLexer.compile(i.text)}\n${list(i.children)}</li>\n`;        
             }
 
             return out.replace('&items;', itemsOut);
@@ -377,29 +370,64 @@ var block_list = {
     }
 };
 
-/**
- * Block Lexer
- */
-$.md.BlockLexer = function (options) {
-    this.inline = new $.md.InlineLexer(options);
+// script
+var block_script = {
+    rule: /^ *<script.*>([\s\S]*?)<\/script>/,
+    handle: function (self, cap) {
+        self.script += cap[1];
+        return '';
+    }
+};
+
+// style css 
+var block_style = {
+    rule: /^ *<style.*>([\s\S]*?)<\/style>/,
+    handle: function (self, cap) {
+        self.style += cap[1];
+        return '';
+    }
+};
+
+// paragraph
+var block_paragraph = {
+    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code|script|style))+)(?:\n+|$)/,
+    handle: function (self, cap) {
+        let text = cap[0];
+        return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
+    }
+};
+
+block_paragraph.rule = replace(block_paragraph.rule)
+('heading', block_heading.rule)
+('lheading', block_lheading.rule)
+('hr', block_hr.rule)
+('blockquote', block_blockquote.rule)
+('image', block_image.rule)
+('code', block_code.rule)
+('script', block_script.rule)
+('style', block_style.rule)
+();
+
+// Block Lexer
+$.md.BlockLexer = function() {
+    this.inlineLexer = new $.md.InlineLexer();
     this.tokenObjs = [];
-    this.is_inited = false;
+    this.isInited = false;
+    this.script = '';
+    this.style = '';
+    this.title = 'mywiki';
     this.init();
 };
 
-/**
- * Register token object
- * tokenObj { rule: regular, hanle: func }
- */
+// Register token object
+// @tokenObj { rule: regular, hanle: func(self, cap) }
 $.md.BlockLexer.prototype.register = function(tokenObj) {
     this.tokenObjs.push(tokenObj);
 };
 
-/**
- * BlockLexer init
- */
+// BlockLexer init
 $.md.BlockLexer.prototype.init = function() {
-    if(this.is_inited)
+    if(this.isInited)
         return;
     this.register(block_space);
     this.register(block_heading);
@@ -410,46 +438,35 @@ $.md.BlockLexer.prototype.init = function() {
     this.register(block_table);
     this.register(block_list);
     this.register(block_code);
+    this.register(block_script);
+    this.register(block_style);
     this.register(block_paragraph);
-    this.is_inited = true;
+    this.isInited = true;
 };
 
-/**
- * Static Lex Method
- */
-$.md.BlockLexer.lex = function(src, options) {
-  var lexer = new $.md.BlockLexer(options);
-  return lexer.lex(src);
-};
-
-/**
- * Preprocessing
- */
-$.md.BlockLexer.prototype.lex = function(src) {
+// BlockLexer compile
+// @src     markdown plain text
+// @return  html text
+$.md.BlockLexer.prototype.compile = function(src) {
     src = src.replace(/\r\n|\r/g, '\n')
              .replace(/\t/g, '    ')
-             .replace(/\u00a0/g, ' ')  /* unicode的不间断空格\u00A0,主要用在office中,让一个单词在结尾处不会换行显示,快捷键ctrl+shift+space */
-             .replace(/\u2424/g, '\n') /* Javascript Escape */
+             .replace(/\u00a0/g, ' ')  // unicode的不间断空格\u00A0,主要用在office中,让一个单词在结尾处不会换行显示,快捷键ctrl+shift+space
+             .replace(/\u2424/g, '\n') // Javascript Escape
              .replace(/^ +$/gm, '');
     var cap,
-        i = 0,
         uglyHtml = '',
-        inline = this.inline;
-
-    let handle = function (i, tokenObj) {
-        cap = tokenObj.rule.exec(src);
-        if(cap) {
-            src = src.substring(cap[0].length);
-            uglyHtml += tokenObj.handle(cap, inline);
-            return false; // jump out current each loop
+        self = this,
+        handle = function (i, tokenObj) {
+            cap = tokenObj.rule.exec(src);
+            if(cap) {
+                src = src.substring(cap[0].length);
+                uglyHtml += tokenObj.handle(self, cap);
+                return false; // jump out current each loop
         }
     };
 
     while(src) {
-        $.each(this.tokenObjs, handle);
-
-        //if(i++ > 1000)
-        //    return uglyHtml;
+        $.each(self.tokenObjs, handle);
     }
 
     return uglyHtml;
@@ -457,24 +474,29 @@ $.md.BlockLexer.prototype.lex = function(src) {
 
 function replace_char(src) {
     return src.replace(/\\\|/g, '&brvbar;')
-               .replace(/\\`/g, '&fyh;')
-               .replace(/\\</g, '&lt;')
-               .replace(/\\>/g, '&gt;');
+              .replace(/\\`/g, '&fyh;')
+              .replace(/\\</g, '&lt;')
+              .replace(/\\>/g, '&gt;');
 }
 
 function recover_char(src) {
     return src.replace(/&brvbar;/g, '|')
-                .replace(/&fyh;/g, '`');
+              .replace(/&fyh;/g, '`');
 }
 
-$.md.marked = function (src, opt) {
+$.md.marked = function(src) {
+    var Lexer = new $.md.BlockLexer(),
+        uglyHtml = '';
     try {
         src = replace_char(src);
-        let html = $.md.BlockLexer.lex(src, opt);
-        return recover_char(html);
+        uglyHtml = Lexer.compile(src);
+        $.md.script = $.md.script || '';
+        $.md.style = $.md.style || '';
+        $.md.script += Lexer.script;
+        $.md.style += Lexer.style;
+        return recover_char(uglyHtml);
     } catch (e) {
-        e.message += '\nPlease report this to https://github.com/chjj/marked.';
-        return '<p>An error occured:</p><pre>' + escape(e.message + '', true) + '</pre>';
+        return `<p>An error occured:</p><pre>${e.message}</pre>`;
     }
 };
 

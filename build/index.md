@@ -4,15 +4,33 @@
 # mywiki
 
 
+<script>
+function myFunction(){
+    var x = document.getElementById("uname");
+    x.value = x.value.toUpperCase();
+}
+</script>
+
+<input type="text" id="uname" onchange="myFunction()">
+
+<p id="pt">使用纯javasript将markdown文件转为html。</p>
+
+<style id="style:css/mycss.css">
+
+#pt {
+    color: red;
+}
+</style>
 
 
 
-使用纯`javasript`将`markdown`文件转为`html`。
 
-
-
+<script>
+    console.log('wolrd');
+</script>
 
 this a code example.
+
 ``` javascript
 var test = function() {
 
@@ -47,9 +65,8 @@ above output.
 
 ## 2. 扩展语法
 
+
 - 包含其它markdown
 
 [include](./include.md)
 [include](./include1.md)
-
-

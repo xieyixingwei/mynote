@@ -8,7 +8,7 @@
     padding: 0;
     width: 70%;
     height: 100%;
-    font-family: "STFangsong";
+    font-family: "Simsun";
     font-size: 16px;
     font-weight: normal;
     line-height: 1.8;
@@ -125,16 +125,6 @@ table.md tr:nth-child(odd) {
 }
 /* table style end */
 
-aside.toc {
-    width: 20%;
-    height: 100%;
-    position: fixed;
-    right: 0;
-    top: 0;
-    background: #d4d4d4;
-    font-size: 14px;
-}
-
 span.md.olli {
     padding-right: 8px;
     font-weight: bolder;
@@ -153,35 +143,92 @@ a:link {
     text-decoration: none;
     color: rgb(58, 119, 233);
 }
+
 a:active {
     text-decoration: blink;
 }
+
 a:hover {
     text-decoration: underline;
     color: rgb(130, 185, 236);
 } 
+
 a:visited {
     text-decoration: none;
     color: rgb(58, 119, 233);
 }
 
-ul.toc {
-    margin-left: 16px;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding-right:0;
-    padding-left: 0px;
-    padding-top: 0;
-    padding-bottom: 0;
+aside#toc, aside#toc ul, h3{
+    margin: 0px;
+    padding: 0px;
 }
 
-li.toc {
-    margin-top: -6px;
-    margin-bottom: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    list-style: none;
+aside#toc li {
     list-style-type: none;
 }
 
+aside#toc {
+    font-size: 12px;
+    color: #333; 
+    font-family: Simsun;
+    line-height: 15px;
+}
+
+aside#toc a {
+    text-decoration:none;
+    color: #004285;
+    border: none;
+}
+
+aside#toc a:hover {
+    text-decoration: none;
+    color: #C33;
+}
+
+aside#toc {
+    width: 20%;
+    height: 100%;
+    position: fixed;
+    right: 0;
+    margin: 50px auto; 
+    padding: 10px; 
+    border:#EEE 1px solid;
+    font-family: Simsun;
+    line-height: 15px;
+}
+
+aside#toc ul { 
+    background: url("images/ul-bg.gif") repeat-y 5px 0px;
+    overflow: hidden;
+}
+
+aside#toc li {
+    padding: 5px 0 2px 15px; 
+    background: url("images/tree-ul-li.gif") no-repeat 5px -32px; 
+}
+
+aside#toc ul li ul {
+    display: none;
+}
+
+aside#toc em {
+    cursor: pointer;
+    display: inline-block;
+    width: 15px;
+    float:left;
+    height: 15px;
+    margin-left: -14px;
+    background: url("images/tree-ul-li.gif") no-repeat -32px 2px;
+}
+
+aside#toc li em.unfold {
+    background-position: -17px -18px;
+}
+
+aside#toc li.tocend {
+    background-color:#FFF;
+}
+
+aside#toc ul.unfold { 
+    display: block;
+}

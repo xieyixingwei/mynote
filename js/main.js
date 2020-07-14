@@ -73,11 +73,15 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
-    $.md.htmlText = $.md.tableOfContents($.md.htmlText);
+    var toc = new $.toc();
+    $.md.htmlText = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.htmlText);
+    $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
+    $('style').append(`${$.md.style}`);
     $('html').removeClass('md-hidden-load');
-    $.md.tableOfContents.scrollToInPageAnchor($.md.inPageAnchor);
+    toc.bindClick();
+    toc.scrollToInPageAnchor($.md.inPageAnchor);
     done();
 });
 

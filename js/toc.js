@@ -1,12 +1,19 @@
-(function($) {
+( function( $ ) {
 'use strict';
 
 /**
  * toc.js Table Of Contents
  */
 
-$.md.tableOfContents = function (htmlSrc) {
-    let $htmlObj = $(`<div>${htmlSrc}</div>`);
+$.toc = function() {
+
+};
+
+// Generate a table of contents
+// @htmlSrc  plain html text
+// @return   html which contains table of contents
+$.toc.prototype.generateToc = function (htmlSrc) {
+    var $htmlObj = $(`<div>${htmlSrc}</div>`);
 
     function catchup_head_recursive(parentObj, heads)
     {
@@ -15,36 +22,30 @@ $.md.tableOfContents = function (htmlSrc) {
             return;
         }
 
-        let $h = $(heads.pop());
-        let tagName = $h.prop("tagName");
-        let levelStr = /^[hH](\d)/.exec(tagName)[1];
-        let level = parseInt(levelStr);
-        let parentLevel = parseInt(parentObj.level);
+        var $h = $(heads.pop()),
+            tagName = $h.prop("tagName"),
+            levelStr = /^[hH](\d)/.exec(tagName)[1],
+            level = parseInt(levelStr),
+            parentLevel = parseInt(parentObj.level),
+            obj;
 
-        if(level > parentLevel)
-        {
-            let obj = {text:$h.text(), level:level, id:parentObj.id+'.'+levelStr, father: parentObj, children:[]};
+        if(level > parentLevel) {
+            obj = {text:$h.text(), level:level, id:parentObj.id+'.'+levelStr, father: parentObj, children:[]};
             parentObj.children.push(obj);
             catchup_head_recursive(obj, heads);
             return;
-        }
-
-        if(level === parentLevel)
-        {
-            let obj = {text:$h.text(), level:level, id:parentObj.father.id+'.'+levelStr, father: parentObj.father, children:[]};
+        } else if(level === parentLevel) {
+            obj = {text:$h.text(), level:level, id:parentObj.father.id+'.'+levelStr, father: parentObj.father, children:[]};
             parentObj.father.children.push(obj);
             catchup_head_recursive(obj, heads);
             return;
-        }
-
-        if(level < parentLevel)
-        {
-            let brotherObj = parentObj;
+        } else if(level < parentLevel) {
+            var brotherObj = parentObj;
             while(brotherObj.level !== level)
             {
                 brotherObj = brotherObj.father;
             }
-            let obj = {text:$h.text(), level:level, id:brotherObj.father.id+'.'+levelStr, father: brotherObj.father, children:[]};
+            obj = {text:$h.text(), level:level, id:brotherObj.father.id+'.'+levelStr, father: brotherObj.father, children:[]};
             brotherObj.father.children.push(obj);
             catchup_head_recursive(obj, heads);
             return;
@@ -56,35 +57,42 @@ $.md.tableOfContents = function (htmlSrc) {
             return '';
         }
 
-        let itemsOut = '';
-        let out = '<ul class="toc">items</ul>\n';
+        var itemsOut = '';
+        var out = '<ul>items</ul>\n';
+        var n = 0;
 
-        for(let i of items) {
-            itemsOut += `<li class="toc"><a class="toc" href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n${list(i.children)}</li>\n`;        
+        for(var i of items) {
+            n++;
+            var tocend = n == (items.length) ? 'class="tocend"' : '';
+            var em = (i.children.length > 0) ? '<em></em>' : '';
+            itemsOut += `<li ${tocend}>${em}<a href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n
+                        ${list(i.children)}</li>\n`;
+            
         }
 
         return out.replace('items', itemsOut);
     }
 
-    let root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]};
-    let $hes = $htmlObj.find('.title');
-    let hes = $hes.toArray().reverse();
+    var root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]};
+    var $hes = $htmlObj.find('.title');
+    var hes = $hes.toArray().reverse();
     catchup_head_recursive(root, hes);
 
-    for(let h of $hes)
+    for(var h of $hes)
     {
         $(h).attr('id', $(h).text());
         $(h).addClass('anchor');
     }
 
-    let tableOfContents = list(root.children);
-    return `<aside class="toc">${tableOfContents}</aside>\n${$htmlObj.html()}`;
+    var tableOfContents = list(root.children);
+    return `<aside id="toc">${tableOfContents}</aside>\n${$htmlObj.html()}`;
 };
 
-$.md.tableOfContents.scrollToInPageAnchor = function(anchorText) {
+// @anchorText  anchor in page
+$.toc.prototype.scrollToInPageAnchor = function(anchorText) {
     if(!anchorText) return;
     if (anchorText.startsWith ('#'))
-        anchorText = anchorText.substring (1, anchorText.length);
+        anchorText = anchorText.substring(1, anchorText.length);
     // we match case insensitive
     var doBreak = false;
     $('.anchor').each (function () {
@@ -100,4 +108,14 @@ $.md.tableOfContents.scrollToInPageAnchor = function(anchorText) {
     });
 };
 
-}(jQuery));
+// bind click event on em of toc
+$.toc.prototype.bindClick = function() {
+    $('#toc em').on( 'click', function() {
+        $(this).toggleClass('unfold');
+        $(this).parent().children('ul').each( function() {
+            $(this).toggleClass('unfold');
+        } );
+    } );
+};
+
+} ( jQuery ) );
