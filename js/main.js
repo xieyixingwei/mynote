@@ -46,7 +46,7 @@ $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
     } ).done( function( data ) {
         $.md.mdText = data;
     } ).fail( function() {
-        console.log('Could not get ' + $.md.mainPage);
+        alert('Could not get ' + $.md.mainPage);
     } ).always( function() {
         done();
     } );
@@ -79,6 +79,7 @@ $.md.stages.stage('show').subscribe( function( done ) {
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
     $('style').append(`${$.md.style}`);
+    $('title').text($.md.title || 'mywiki');
     $('html').removeClass('md-hidden-load');
     toc.bindClick();
     toc.scrollToAnchor($.md.inPageAnchor);
