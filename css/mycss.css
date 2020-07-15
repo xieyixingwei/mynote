@@ -32,26 +32,27 @@ hr.md {
     border-top:1px solid #3D7E9A;
 }
 
-.md.title {
+h1.md, h2.md, h3.md,
+h4.md, h5.md, h6.md {
     color: #3D7E9A;
 }
-h1.md.title {
-    font-size: 32px;
-}
-h2.md.title {
+h1.md {
     font-size: 28px;
 }
-h3.md.title {
+h2.md {
+    font-size: 26px;
+}
+h3.md {
     font-size: 24px;
 }
-h4.md.title {
+h4.md {
+    font-size: 22px;
+}
+h5.md {
     font-size: 20px;
 }
-h5.md.title {
+h6.md {
     font-size: 18px;
-}
-h6.md.title {
-    font-size: 16px;
 }
 
 p.md {
@@ -60,10 +61,10 @@ p.md {
 
 .md.lheading {
     display: inline-block;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bolder;
     color: #FFF;
-    padding-left: 16px;
+    padding-left: 0px;
     padding-right: 4px;
     background-color: #3D7E9A;
 }

@@ -45,26 +45,27 @@ hr.md {
     border-top:1px solid #3D7E9A;
 }
 
-.md.title {
+h1.md, h2.md, h3.md,
+h4.md, h5.md, h6.md {
     color: #3D7E9A;
 }
-h1.md.title {
-    font-size: 32px;
-}
-h2.md.title {
+h1.md {
     font-size: 28px;
 }
-h3.md.title {
+h2.md {
+    font-size: 26px;
+}
+h3.md {
     font-size: 24px;
 }
-h4.md.title {
+h4.md {
+    font-size: 22px;
+}
+h5.md {
     font-size: 20px;
 }
-h5.md.title {
+h6.md {
     font-size: 18px;
-}
-h6.md.title {
-    font-size: 16px;
 }
 
 p.md {
@@ -73,10 +74,10 @@ p.md {
 
 .md.lheading {
     display: inline-block;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bolder;
     color: #FFF;
-    padding-left: 16px;
+    padding-left: 0px;
     padding-right: 4px;
     background-color: #3D7E9A;
 }
@@ -637,7 +638,7 @@ var inline_italic = {
 var inline_code = {
     rule: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
     handle: function (cap) {
-        let text = cap[2];
+        var text = cap[2];
         text = text.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
         return `<code class="md">${text}</code>`;
@@ -742,9 +743,9 @@ var block_space = {
 var block_heading = {
     rule: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
     handle: function (self, cap) {
-        let level = cap[1].length,
+        var level = cap[1].length,
             text = cap[2];
-        return `<h${level} class="md title">${self.inlineLexer.compile(text)}</h${level}>\n`;
+        return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
 
@@ -753,7 +754,7 @@ var block_heading = {
 var block_lheading = {
     rule: /^([^\n]+)\n *(=|-){3,} *(?:\n+|$)/,
     handle: function (self, cap) {
-        let text = cap[1];  
+        var text = cap[1];  
         return `<p class="md lheading" >${self.inlineLexer.compile(text)}</p>\n`;
     }
 };
@@ -772,7 +773,7 @@ var block_hr = {
 var block_blockquote = {
     rule: /^( *>[^\n]+(\n[^\n]+)*\n)+(?:\n|$)/,
     handle: function (self, cap) {
-        let text = cap[0].replace(/^ *> ?/gm, '');
+        var text = cap[0].replace(/^ *> ?/gm, '');
         return `<blockquote class="md">${self.inlineLexer.compile(text)}</blockquote>\n`;
     }
 };
@@ -781,11 +782,12 @@ var block_blockquote = {
 var block_image = {
     rule: /^ *!\[([^\[\]]*)\]\(([^\n]*)\)/,
     handle: function (self, cap) {
-        let src = cap[2],
+        var src = cap[2],
             atl = cap[1],
             width = '',
             height = '',
             align = '';
+
         cap = /width:(\d+(px|em|(?=.*)))/.exec(atl);
         if(cap) {
             width = `width="${cap[1].trim()}"`;
@@ -803,8 +805,13 @@ var block_image = {
         else {
             align=`style="text-align:center;"`;
         }
-
-        return `<p ${align} class="md"><img class="md" src="${$.md.href + src}" alt="${atl}" ${width} ${height}></p>\n`;
+        
+        if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
+            src = src;
+        } else {
+            src = $.md.href + src;
+        }
+        return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
     }
 };
 
@@ -814,7 +821,7 @@ var block_image = {
 var block_code = {
     rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n*|$)/,
     handle: function (self, cap) {
-        let code = cap[3];
+        var code = cap[3];
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
         return `<pre class="md">${code}</pre>\n`;
@@ -827,13 +834,13 @@ var block_code = {
 var block_table = {
     rule: /^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*/,
     handle: function (self, cap) {
-        let header = cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
+        var header = cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
             align = cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
             rows = cap[3].replace(/\n$/, '').split('\n');
 
         function get_aligns(align) {
-            let aligns = [];
-            for(let a of align) {
+            var aligns = [];
+            for(var a of align) {
                 if(/^ *-+: *$/.test(a))
                     aligns.push('right');
                 else if (/^ *:-+: *$/.test(a))
@@ -846,10 +853,10 @@ var block_table = {
             return aligns;
         }
 
-        let aligns = get_aligns(align);
+        var aligns = get_aligns(align);
 
         function assemble_thead(header, aligns) {
-            let headHtml = '<thead><tr>';
+            var headHtml = '<thead><tr>';
             $(header).each(function (i, h){
                 headHtml += `<th align="${aligns[i]}">${self.inlineLexer.compile(h)}</th>`;
             });
@@ -858,10 +865,10 @@ var block_table = {
         }
 
         function assemble_tbody(rows, aligns) {
-            let bodyHtml = '<tbody>';
+            var bodyHtml = '<tbody>';
             $(rows).each(function (i, row){
                 bodyHtml += `<tr>`;
-                let cells = row.split('|');
+                var cells = row.split('|');
                 $(cells).each(function (i, c){
                     bodyHtml += `<td align="${aligns[i]}">${self.inlineLexer.compile(c)}</td>`;
                 });
@@ -883,7 +890,7 @@ var block_list = {
     rule: /^(?: *(?:\d+\.|[-+*]) +[^\n]+(?:\n[^\n]+)*?\n)+(?:\n|$)/,
     handle: function (self, cap) {
         function pickup_items(src) {
-            let reg = /^( *)(\d+\.|[-+*]) +([\s\S]*?)\n(?= *(\d+\.|[-+*]) +|$)/,
+            var reg = /^( *)(\d+\.|[-+*]) +([\s\S]*?)\n(?= *(\d+\.|[-+*]) +|$)/,
                 items = [],
                 cap;
             while(src) {
@@ -899,10 +906,10 @@ var block_list = {
             items.reverse();
 
             function tree_items(items) {
-                let tree = [];
+                var tree = [];
                 while(items.length) {
-                    let i = items.pop();
-                    let next = items[items.length - 1];
+                    var i = items.pop();
+                    var next = items[items.length - 1];
                     if(next && (i.indent == next.indent)) {
                         i.children = [];
                         tree.push(i);
@@ -933,9 +940,9 @@ var block_list = {
                 return '';
             }
 
-            let itemsOut = '';
-            let out = '';
-            let isOl = false;
+            var itemsOut = '';
+            var out = '';
+            var isOl = false;
 
             if(/^\d+\./.exec(items[0].prefix)) {
                 isOl = true;
@@ -944,7 +951,7 @@ var block_list = {
             else if (/^[-+*]/.exec(items[0].prefix))
                 out = '<ul class="md">&items;</ul>\n';
 
-            for(let i of items) {
+            for(var i of items) {
                 var order = isOl ? `<span class="md olli">${i.prefix}</span>` :'';
                 itemsOut += `<li>${order}${self.inlineLexer.compile(i.text)}\n${list(i.children)}</li>\n`;        
             }
@@ -952,7 +959,7 @@ var block_list = {
             return out.replace('&items;', itemsOut);
         }
 
-        let items = pickup_items(cap[0]);
+        var items = pickup_items(cap[0]);
         return list(items);
     }
 };
@@ -979,7 +986,7 @@ var block_style = {
 var block_paragraph = {
     rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code|script|style))+)(?:\n+|$)/,
     handle: function (self, cap) {
-        let text = cap[0];
+        var text = cap[0];
         return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
     }
 };
@@ -1090,26 +1097,26 @@ $.md.marked = function(src) {
 }(jQuery));
 
 ( function( $ ) {
-'use strict';
+
+    'use strict';
 
 /**
  * toc.js Table Of Contents
  */
-
 $.toc = function() {
 
 };
 
-// Generate a table of contents
-// @htmlSrc  plain html text
-// @return   html which contains table of contents
-$.toc.prototype.generateToc = function (htmlSrc) {
+/**
+ * Generate a table of contents.
+ * @htmlSrc  plain html text.
+ * @return   html which contains table of contents.
+ */
+$.toc.prototype.generateToc = function(htmlSrc) {
     var $htmlObj = $(`<div>${htmlSrc}</div>`);
 
-    function catchup_head_recursive(parentObj, heads)
-    {
-        if(0 === heads.length)
-        {
+    function extract_head_recursive(parentObj, heads) {
+        if(0 === heads.length) {
             return;
         }
 
@@ -1118,28 +1125,25 @@ $.toc.prototype.generateToc = function (htmlSrc) {
             levelStr = /^[hH](\d)/.exec(tagName)[1],
             level = parseInt(levelStr),
             parentLevel = parseInt(parentObj.level),
+            brotherObj,
             obj;
 
         if(level > parentLevel) {
             obj = {text:$h.text(), level:level, id:parentObj.id+'.'+levelStr, father: parentObj, children:[]};
             parentObj.children.push(obj);
-            catchup_head_recursive(obj, heads);
-            return;
+            extract_head_recursive(obj, heads);
         } else if(level === parentLevel) {
             obj = {text:$h.text(), level:level, id:parentObj.father.id+'.'+levelStr, father: parentObj.father, children:[]};
             parentObj.father.children.push(obj);
-            catchup_head_recursive(obj, heads);
-            return;
+            extract_head_recursive(obj, heads);
         } else if(level < parentLevel) {
-            var brotherObj = parentObj;
-            while(brotherObj.level !== level)
-            {
+            brotherObj = parentObj;
+            while(brotherObj.level !== level) {
                 brotherObj = brotherObj.father;
             }
             obj = {text:$h.text(), level:level, id:brotherObj.father.id+'.'+levelStr, father: brotherObj.father, children:[]};
             brotherObj.father.children.push(obj);
-            catchup_head_recursive(obj, heads);
-            return;
+            extract_head_recursive(obj, heads);
         }
     }
 
@@ -1148,64 +1152,74 @@ $.toc.prototype.generateToc = function (htmlSrc) {
             return '';
         }
 
-        var itemsOut = '';
-        var out = '<ul>items</ul>\n';
-        var n = 0;
+        var itemsOut = '',
+            out = '<ul>&items;</ul>',
+            n = 0;
 
         for(var i of items) {
             n++;
-            var tocend = n == (items.length) ? 'class="tocend"' : '';
-            var em = (i.children.length > 0) ? '<em></em>' : '';
-            itemsOut += `<li ${tocend}>${em}<a href="${ $.md.baseUrl}#!${ $.md.mainHref}#${i.text}">${i.text}</a>\n
-                        ${list(i.children)}</li>\n`;
-            
+            var tocend = n == (items.length) ? 'class="tocend"' : '',
+                em = (i.children.length > 0) ? '<em></em>' : '';
+            itemsOut += `<li ${tocend}>${em}<a href="javascript:void(0);">${$.trim(i.text)}</a>
+                        ${list(i.children)}</li>`;
         }
 
-        return out.replace('items', itemsOut);
+        return out.replace('&items;', itemsOut);
     }
 
-    var root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]};
-    var $hes = $htmlObj.find('.title');
-    var hes = $hes.toArray().reverse();
-    catchup_head_recursive(root, hes);
+    var root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]},
+        $hes = $htmlObj.find(':header'),
+        hes = $hes.toArray().reverse(),
+        tableOfContents = '';
 
-    for(var h of $hes)
-    {
-        $(h).attr('id', $(h).text());
-        $(h).addClass('anchor');
-    }
+    extract_head_recursive(root, hes);
+    tableOfContents = list(root.children);
 
-    var tableOfContents = list(root.children);
-    return `<aside id="toc">${tableOfContents}</aside>\n${$htmlObj.html()}`;
+    return `<aside id="toc">${tableOfContents}</aside>`;
 };
 
-// @anchorText  anchor in page
-$.toc.prototype.scrollToInPageAnchor = function(anchorText) {
-    if(!anchorText) return;
-    if (anchorText.startsWith ('#'))
-        anchorText = anchorText.substring(1, anchorText.length);
-    // we match case insensitive
-    var doBreak = false;
-    $('.anchor').each (function () {
-        if (doBreak) { return; }
-        var $this = $(this);
-        // don't use the text of any subnode
-        var text = $this.toptext();
-        //var match = $.md.util.getInpageAnchorText(text);
-        if (anchorText === text) {
-            this.scrollIntoView(true);
-            doBreak = true;
-        }
-    });
-};
-
-// bind click event on em of toc
+/**
+ * Bind click event of toc.
+ */
 $.toc.prototype.bindClick = function() {
+
+    // bind click event on em element of toc.
     $('#toc em').on( 'click', function() {
         $(this).toggleClass('unfold');
         $(this).parent().children('ul').each( function() {
             $(this).toggleClass('unfold');
         } );
+    } );
+
+    // bind click event on a element of toc.
+    $('#toc a').on( 'click', function() {
+        var targetText = $(this).text(),
+            currentText = '';
+        $(':header').each( function() {
+            // don't use the text of any subnode
+            currentText = $(this).clone().children().remove().end().text().trim();
+            if(currentText === targetText) {
+                this.scrollIntoView(true);
+                return false; // jump out loop
+            }
+            return true;
+        } );
+    } );
+};
+
+$.toc.prototype.scrollToAnchor = function(anchorText) {
+    if(anchorText.slice(0, 1) === '#') {
+        anchorText = anchorText.substring(1, anchorText.length);
+    }
+
+    $(':header').each( function() {
+        // don't use the text of any subnode
+        var currentText = $(this).clone().children().remove().end().text().trim();
+        if (currentText === anchorText) {
+            this.scrollIntoView(true);
+            doBreak = false;
+        }
+        return true;
     } );
 };
 
@@ -1287,14 +1301,14 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
     var toc = new $.toc();
-    $.md.htmlText = toc.generateToc($.md.htmlText);
+    $.md.tocHtml = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
-    $('#md-content').html($.md.htmlText);
+    $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
     $('style').append(`${$.md.style}`);
     $('html').removeClass('md-hidden-load');
     toc.bindClick();
-    toc.scrollToInPageAnchor($.md.inPageAnchor);
+    toc.scrollToAnchor($.md.inPageAnchor);
     done();
 });
 

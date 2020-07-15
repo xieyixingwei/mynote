@@ -74,14 +74,14 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
     var toc = new $.toc();
-    $.md.htmlText = toc.generateToc($.md.htmlText);
+    $.md.tocHtml = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
-    $('#md-content').html($.md.htmlText);
+    $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
     $('style').append(`${$.md.style}`);
     $('html').removeClass('md-hidden-load');
     toc.bindClick();
-    toc.scrollToInPageAnchor($.md.inPageAnchor);
+    toc.scrollToAnchor($.md.inPageAnchor);
     done();
 });
 
