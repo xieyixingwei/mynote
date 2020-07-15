@@ -173,8 +173,22 @@ var block_heading = {
     }
 };
 
+// ``` type
+// block_code
+// ```
+var block_code = {
+    rule: /^ *(`{3,}|~{3,}) *(\S*?) *\n([\s\S]+?)\1 *(?:\n*|$)/,
+    handle: function (self, cap) {
+        var code = cap[3];
+        code = code.replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;');
+        return `<pre class="md">${code}</pre>\n`;
+    }
+};
+
 // line head
 // ===
+// ---
 var block_lheading = {
     rule: /^([^\n]+)\n *(=|-){3,} *(?:\n+|$)/,
     handle: function (self, cap) {
@@ -236,19 +250,6 @@ var block_image = {
             src = self.basePath + self.currentPath + src;
         }
         return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
-    }
-};
-
-// ``` type
-// block_code
-// ```
-var block_code = {
-    rule: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n*|$)/,
-    handle: function (self, cap) {
-        var code = cap[3];
-        code = code.replace(/</g, '&lt;')
-                   .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
     }
 };
 
@@ -459,13 +460,13 @@ $.md.BlockLexer.prototype.init = function() {
         return;
     this.register(block_space);
     this.register(block_heading);
+    this.register(block_code);
     this.register(block_lheading);
     this.register(block_hr);
     this.register(block_blockquote);
     this.register(block_image);
     this.register(block_table);
     this.register(block_list);
-    this.register(block_code);
     this.register(block_script);
     this.register(block_style);
     this.register(block_paragraph);
