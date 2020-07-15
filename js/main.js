@@ -40,26 +40,26 @@ $.md.stages.stage('init').subscribe( function( done ) {
 } );
 
 $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
-    console.time('load ' + $.md.mainHref);
     $.ajax( {
-        url: $.md.mainHref,
+        url: $.md.mainPage,
         dataType: 'text'
     } ).done( function( data ) {
-        console.timeEnd('load ' + $.md.mainHref);
         $.md.mdText = data;
-        console.log('Get ' + $.md.mainHref);
     } ).fail( function() {
-        console.log('Could not get ' + $.md.mainHref);
+        console.log('Could not get ' + $.md.mainPage);
     } ).always( function() {
         done();
     } );
 } );
 
 $.md.stages.stage('transform').subscribe( function( done ) {
+    $.md.options = {
+        baseUrl: $.md.baseUrl,
+        basePath: $.md.basePath,
+        currentPath: $.md.currentPath
+    };
 
-    console.time('mardked '+$.md.mainHref);
-    $.md.htmlText = $.md.marked($.md.mdText);
-    console.timeEnd('mardked '+$.md.mainHref);
+    $.md.htmlText = $.md.marked($.md.mdText, $.md.options);
 
     // Handle up to 3 nests
     loadExternalIncludes().always( function() {
@@ -73,7 +73,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
-    var toc = new $.toc();
+    var toc = new $.toc($.md.title);
     $.md.tocHtml = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
@@ -99,22 +99,18 @@ function loadExternalIncludes() {
         });
     }
 
-    var includeLinks = findExternalIncludes ($mdHtml);
-    var dfd = $.DeferredCount(includeLinks.length);
+    var includeLinks = findExternalIncludes ($mdHtml),
+        dfd = $.DeferredCount(includeLinks.length);
 
     includeLinks.each( function( i, e ) {
-        var $el = $(e);
-        var href = $el.attr('href');
-        var text = $el.toptext();
-        console.time('load ' + href);
+        var $el = $(e),
+            href = $el.attr('href'),
+            text = $el.toptext();
         $.ajax( {
             url: href,
             dataType: 'text'
         } ).done( function( data ) {
-            console.timeEnd('load ' + href);
-            console.time('marked ' + href);
-            var $html = $($.md.marked(data));
-            console.timeEnd('marked ' + href);
+            var $html = $($.md.marked(data, $.md.options));
             $html.insertAfter($el);
             $el.remove();
             $.md.htmlText = $mdHtml.html();
@@ -127,65 +123,60 @@ function loadExternalIncludes() {
 }
 
 function extractHashData() {
+    var href = window.location.href,
+        hash = window.location.hash,
+        pos = -1;
+
+    pos = href.indexOf('#!');
+    $.md.baseUrl = href.substring(0, pos);
+
+    pos = $.md.baseUrl.lastIndexOf('/');
+    $.md.basePath = $.md.baseUrl.substring(0, pos + 1);
+
     // first char is the # or #!
-    var href;
-    if (window.location.hash.startsWith('#!')) {
-        href = window.location.hash.substring(2);
-    } else {
-        href = window.location.hash.substring(1);
-    }
-    href = decodeURIComponent(href);
+    hash = hash.startsWith('#!') ? hash.substring(2) : hash.substring(1);
+    hash = decodeURIComponent(hash);
+
     // extract possible in-page anchor
-    let ex_pos = href.indexOf('#');
-    if (ex_pos !== -1) {
-        $.md.inPageAnchor = href.substring(ex_pos + 1);
-        $.md.mainHref = href.substring(0, ex_pos);
-    } else {
-        $.md.inPageAnchor = '';
-        $.md.mainHref = href;
-    }
+    pos = hash.indexOf('#');
+    $.md.anchor = (pos !== -1) ? hash.substring(pos + 1) : '';
+    $.md.mainPage = (pos !== -1) ? hash.substring(0, pos) : hash;
 
-    ex_pos = $.md.mainHref.lastIndexOf('/');
-    if(ex_pos === -1)
-        $.md.href = '';
-    else
-        $.md.href = $.md.mainHref.substring(0, ex_pos + 1);
+    pos = $.md.mainPage.lastIndexOf('/');
+    $.md.currentPath = (pos !== -1) ? $.md.mainPage.substring(0, pos + 1) : '';
 
-    let len = window.location.href.indexOf('#!');
-    $.md.baseUrl = window.location.href.substring(0, len);
-    len = $.md.baseUrl.lastIndexOf('/');
-    $.md.basePath = $.md.baseUrl.substring(0, len + 1);
-    console.log('href: ' + $.md.href);
-    console.log('base url: ' + $.md.baseUrl);
-    console.log('main page: ' + $.md.mainHref);
+    console.log('window.location.href: ' + window.location.href);
+    console.log('window.location.hash: ' + window.location.hash);
+    console.log('baseUrl: ' + $.md.baseUrl);
+    console.log('basePath: ' + $.md.basePath);
+    console.log('currentPath: ' + $.md.currentPath);
+    console.log('mainPage: ' + $.md.mainPage);
+    console.log('anchor: ' + $.md.anchor);
 }
 
-function appendDefaultFilenameToHash () {
-    var newHashString = '';
-    var currentHashString = window.location.hash || '';
-    if (currentHashString === '' ||
-        currentHashString === '#'||
-        currentHashString === '#!')
-    {
-        newHashString = '#!index.md';
+function appendDefaultFilenameToHash() {
+    var newHash = '',
+        hash = window.location.hash || '';
+    if(hash === '' || hash === '#' || hash === '#!') {
+        newHash = '#!index.md';
+    } else if(hash.startsWith ('#!') && hash.endsWith('/')) {
+        newHash += 'index.md';
     }
-    else if (currentHashString.startsWith ('#!') &&
-                currentHashString.endsWith('/')
-            ) {
-        newHashString = currentHashString + 'index.md';
+
+    // redefine the default new hash
+    if(newHash) {
+        window.location.hash = newHash;
     }
-    if (newHashString)
-        window.location.hash = newHashString;
 }
 
-$(document).ready(function () {
+$(document).ready( function () {
     console.time('all time');
     appendDefaultFilenameToHash();
     extractHashData();
 
-    $(window).bind('hashchange', function () {
+    $(window).bind('hashchange', function() {
         window.location.reload(false);
-    });
+    } );
 
     $.md.stages.run().done( function() {
         console.log('all done');

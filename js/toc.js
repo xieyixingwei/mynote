@@ -5,8 +5,8 @@
 /**
  * toc.js Table Of Contents
  */
-$.toc = function() {
-
+$.toc = function(title) {
+    this.title = title || '';
 };
 
 /**
@@ -77,7 +77,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
     extract_head_recursive(root, hes);
     tableOfContents = list(root.children);
 
-    return `<aside id="toc">${tableOfContents}</aside>`;
+    return `<aside id="toc"><p id="toctitle">${this.title}</p>${tableOfContents}</aside>`;
 };
 
 /**

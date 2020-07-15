@@ -9,7 +9,7 @@
 // plain text
 var inline_text = {
     rule: /^[\s\S]+?(?=([<!\[_*`]| {2,}\n|~~|$))/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return cap[0];
     }
 };
@@ -17,7 +17,7 @@ var inline_text = {
 // line break  
 var inline_br = {
     rule: /^ {2,}\n(?!\s*$)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
       return `<br/>`;
     }
 };
@@ -25,7 +25,7 @@ var inline_br = {
 // ~~strikethrough~~
 var inline_del = {
     rule: /^~~([\s\S]*?)~~/,
-    handle: function (cap) {
+    handle: function(self, cap) {
       return `<del class="md">${cap[1]}</del>`;
     }
 };
@@ -33,7 +33,7 @@ var inline_del = {
 // **emphasis**
 var inline_strong = {
     rule: /^\*\*([\s\S]*?)\*\*/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return `<span class="md strong">${cap[1]}</span>`;
     }
 };
@@ -41,7 +41,7 @@ var inline_strong = {
 // *italic*
 var inline_italic = {
     rule: /^\*([\s\S]*?)\*/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return `<span class="md italic">${cap[1]}</span>`;
     }
 };
@@ -49,7 +49,7 @@ var inline_italic = {
 // `code`
 var inline_code = {
     rule: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         var text = cap[2];
         text = text.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
@@ -61,26 +61,32 @@ var inline_code = {
 // [...](link)
 var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         var href = cap[2],
             text = cap[1];
         if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${$.md.href + href}">${text}</a>`;
+            return `<a class="md" href="${self.currentPath + href}">${text}</a>`;
+        else if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
+            return `<a class="md" href="${href}">${text}</a>`;
         else if($.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
-        else if(href.startsWith('www') || href.startsWith('http'))
-            return `<a class="md" href="${href}">${text}</a>`;
-        else if(href.startsWith('/'))
-            return `<a class="md" href="${href}">${text}</a>`;
-        else
-            return `<a class="md" href="${$.md.basePath + $.md.href + href}">${text}</a>`;
+            return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
     }
 };
 
-// Inline Lexer
-$.md.InlineLexer = function() {
+/**
+ * Inline Lexer
+ * for example, the url is 'file:///home/gn/Workspace/Study/mywiki.html#!1-Development-Aux/Markdown/markdown.md'
+ * @options.baseUrl      like 'file:///home/gn/Workspace/Study/mywiki.html'
+ * @options.basePath     like 'file:///home/gn/Workspace/Study/'
+ * @options.currentPath  like '1-Development-Aux/Markdown/'
+ * @options.fileName     like 'markdown.md'
+ */
+$.md.InlineLexer = function(options) {
     this.tokenObjs = [];
     this.isInited = false;
+    this.baseUrl = options.baseUrl && options.baseUrl || '';
+    this.basePath = options.basePath && options.basePath || '';
+    this.currentPath = options.currentPath && options.currentPath || '';
     this.init();
 };
 
@@ -110,11 +116,12 @@ $.md.InlineLexer.prototype.init = function() {
 $.md.InlineLexer.prototype.compile = function(src) {
     var cap,
         out = '',
+        self = this,
         handle = function (i, tokenObj) {
             cap = tokenObj.rule.exec(src);
             if(cap) {
                 src = src.substring(cap[0].length);
-                out += tokenObj.handle(cap);
+                out += tokenObj.handle(self, cap);
                 return false; // jump out current each loop
             }
         };
@@ -153,10 +160,15 @@ var block_space = {
 // ...
 // ###### head level 6
 var block_heading = {
-    rule: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
+    rule: /^ *(#{1,6}) *([^\n]+?) *(?:\n+|$)/,
     handle: function (self, cap) {
         var level = cap[1].length,
             text = cap[2];
+        if($.trim(text).slice(-1) === '#' && !self.title) {
+            self.title = $.trim(text.slice(0, -1));
+            return '';
+        }
+
         return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
@@ -221,7 +233,7 @@ var block_image = {
         if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
             src = src;
         } else {
-            src = $.md.href + src;
+            src = self.basePath + self.currentPath + src;
         }
         return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
     }
@@ -414,14 +426,24 @@ block_paragraph.rule = replace(block_paragraph.rule)
 ('style', block_style.rule)
 ();
 
-// Block Lexer
-$.md.BlockLexer = function() {
-    this.inlineLexer = new $.md.InlineLexer();
+/**
+ * Block Lexer
+ * for example, the url is 'file:///home/gn/Workspace/Study/mywiki.html#!1-Development-Aux/Markdown/markdown.md'
+ * @options.baseUrl      like file:///home/gn/Workspace/Study/mywiki.html
+ * @options.basePath     like file:///home/gn/Workspace/Study/
+ * @options.currentPath  like 1-Development-Aux/Markdown/
+ * @options.fileName     like markdown.md
+ */
+$.md.BlockLexer = function(options) {
+    this.inlineLexer = new $.md.InlineLexer(options);
     this.tokenObjs = [];
     this.isInited = false;
     this.script = '';
     this.style = '';
-    this.title = 'mywiki';
+    this.title = '';
+    this.baseUrl = options.baseUrl && options.baseUrl || '';
+    this.basePath = options.basePath && options.basePath || '';
+    this.currentPath = options.currentPath && options.currentPath || '';
     this.init();
 };
 
@@ -490,8 +512,8 @@ function recover_char(src) {
               .replace(/&fyh;/g, '`');
 }
 
-$.md.marked = function(src) {
-    var Lexer = new $.md.BlockLexer(),
+$.md.marked = function(src, options) {
+    var Lexer = new $.md.BlockLexer(options),
         uglyHtml = '';
     try {
         src = replace_char(src);
@@ -500,6 +522,7 @@ $.md.marked = function(src) {
         $.md.style = $.md.style || '';
         $.md.script += Lexer.script;
         $.md.style += Lexer.style;
+        $.md.title = $.md.title || Lexer.title;
         return recover_char(uglyHtml);
     } catch (e) {
         return `<p>An error occured:</p><pre>${e.message}</pre>`;

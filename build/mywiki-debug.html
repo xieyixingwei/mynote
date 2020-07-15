@@ -172,31 +172,31 @@ a:visited {
     color: rgb(58, 119, 233);
 }
 
-aside#toc, aside#toc ul, h3{
+aside#toc, aside#toc ul, p#toctitle {
     margin: 0px;
     padding: 0px;
 }
 
 aside#toc li {
-    list-style-type: none;
+    list-style-type:none;
 }
 
 aside#toc {
-    font-size: 12px;
-    color: #333; 
+    font-size:12px;
+    color:#333; 
     font-family: Simsun;
-    line-height: 15px;
+    line-height:15px;
 }
 
 aside#toc a {
     text-decoration:none;
-    color: #004285;
-    border: none;
+    color:#004285;
+    border:none;
 }
 
 aside#toc a:hover {
-    text-decoration: none;
-    color: #C33;
+    text-decoration:none;
+    color:#C33;
 }
 
 aside#toc {
@@ -204,35 +204,35 @@ aside#toc {
     height: 100%;
     position: fixed;
     right: 0;
-    margin: 50px auto; 
-    padding: 10px; 
+    margin:50px auto; 
+    padding:10px; 
     border:#EEE 1px solid;
     font-family: Simsun;
-    line-height: 15px;
+    line-height:15px;
 }
 
 aside#toc ul { 
-    background: url("images/ul-bg.gif") repeat-y 5px 0px;
-    overflow: hidden;
+    background:url("images/ul-bg.gif") repeat-y 5px 0px;
+    overflow:hidden;
 }
 
 aside#toc li {
-    padding: 5px 0 2px 15px; 
-    background: url("images/tree-ul-li.gif") no-repeat 5px -32px; 
+    padding:5px 0 2px 15px; 
+    background:url("images/tree-ul-li.gif") no-repeat 5px -32px; 
 }
 
 aside#toc ul li ul {
-    display: none;
+    display:none;
 }
 
 aside#toc em {
-    cursor: pointer;
-    display: inline-block;
-    width: 15px;
+    cursor:pointer;
+    display:inline-block;
+    width:15px;
     float:left;
-    height: 15px;
-    margin-left: -14px;
-    background: url("images/tree-ul-li.gif") no-repeat -32px 2px;
+    height:15px;
+    margin-left:-14px;
+    background:url("images/tree-ul-li.gif") no-repeat -32px 2px;
 }
 
 aside#toc li em.unfold {
@@ -245,6 +245,11 @@ aside#toc li.tocend {
 
 aside#toc ul.unfold { 
     display: block;
+}
+
+p#toctitle {
+    color:#004285;
+    font-weight: bolder;
 }
 </style><!-- END css/mycss.css -->
 <!-- START build/mywiki.js -->
@@ -597,7 +602,7 @@ $.Stages.prototype.run = function() {
 // plain text
 var inline_text = {
     rule: /^[\s\S]+?(?=([<!\[_*`]| {2,}\n|~~|$))/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return cap[0];
     }
 };
@@ -605,7 +610,7 @@ var inline_text = {
 // line break  
 var inline_br = {
     rule: /^ {2,}\n(?!\s*$)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
       return `<br/>`;
     }
 };
@@ -613,7 +618,7 @@ var inline_br = {
 // ~~strikethrough~~
 var inline_del = {
     rule: /^~~([\s\S]*?)~~/,
-    handle: function (cap) {
+    handle: function(self, cap) {
       return `<del class="md">${cap[1]}</del>`;
     }
 };
@@ -621,7 +626,7 @@ var inline_del = {
 // **emphasis**
 var inline_strong = {
     rule: /^\*\*([\s\S]*?)\*\*/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return `<span class="md strong">${cap[1]}</span>`;
     }
 };
@@ -629,7 +634,7 @@ var inline_strong = {
 // *italic*
 var inline_italic = {
     rule: /^\*([\s\S]*?)\*/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         return `<span class="md italic">${cap[1]}</span>`;
     }
 };
@@ -637,7 +642,7 @@ var inline_italic = {
 // `code`
 var inline_code = {
     rule: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         var text = cap[2];
         text = text.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
@@ -649,26 +654,32 @@ var inline_code = {
 // [...](link)
 var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
-    handle: function (cap) {
+    handle: function(self, cap) {
         var href = cap[2],
             text = cap[1];
         if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${$.md.href + href}">${text}</a>`;
+            return `<a class="md" href="${self.currentPath + href}">${text}</a>`;
+        else if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
+            return `<a class="md" href="${href}">${text}</a>`;
         else if($.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${$.md.baseUrl + '#!' + $.md.href + href}">${text}</a>`;
-        else if(href.startsWith('www') || href.startsWith('http'))
-            return `<a class="md" href="${href}">${text}</a>`;
-        else if(href.startsWith('/'))
-            return `<a class="md" href="${href}">${text}</a>`;
-        else
-            return `<a class="md" href="${$.md.basePath + $.md.href + href}">${text}</a>`;
+            return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
     }
 };
 
-// Inline Lexer
-$.md.InlineLexer = function() {
+/**
+ * Inline Lexer
+ * for example, the url is 'file:///home/gn/Workspace/Study/mywiki.html#!1-Development-Aux/Markdown/markdown.md'
+ * @options.baseUrl      like 'file:///home/gn/Workspace/Study/mywiki.html'
+ * @options.basePath     like 'file:///home/gn/Workspace/Study/'
+ * @options.currentPath  like '1-Development-Aux/Markdown/'
+ * @options.fileName     like 'markdown.md'
+ */
+$.md.InlineLexer = function(options) {
     this.tokenObjs = [];
     this.isInited = false;
+    this.baseUrl = options.baseUrl && options.baseUrl || '';
+    this.basePath = options.basePath && options.basePath || '';
+    this.currentPath = options.currentPath && options.currentPath || '';
     this.init();
 };
 
@@ -698,11 +709,12 @@ $.md.InlineLexer.prototype.init = function() {
 $.md.InlineLexer.prototype.compile = function(src) {
     var cap,
         out = '',
+        self = this,
         handle = function (i, tokenObj) {
             cap = tokenObj.rule.exec(src);
             if(cap) {
                 src = src.substring(cap[0].length);
-                out += tokenObj.handle(cap);
+                out += tokenObj.handle(self, cap);
                 return false; // jump out current each loop
             }
         };
@@ -741,10 +753,15 @@ var block_space = {
 // ...
 // ###### head level 6
 var block_heading = {
-    rule: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
+    rule: /^ *(#{1,6}) *([^\n]+?) *(?:\n+|$)/,
     handle: function (self, cap) {
         var level = cap[1].length,
             text = cap[2];
+        if($.trim(text).slice(-1) === '#' && !self.title) {
+            self.title = $.trim(text.slice(0, -1));
+            return '';
+        }
+
         return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
@@ -809,7 +826,7 @@ var block_image = {
         if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
             src = src;
         } else {
-            src = $.md.href + src;
+            src = self.basePath + self.currentPath + src;
         }
         return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
     }
@@ -1002,14 +1019,24 @@ block_paragraph.rule = replace(block_paragraph.rule)
 ('style', block_style.rule)
 ();
 
-// Block Lexer
-$.md.BlockLexer = function() {
-    this.inlineLexer = new $.md.InlineLexer();
+/**
+ * Block Lexer
+ * for example, the url is 'file:///home/gn/Workspace/Study/mywiki.html#!1-Development-Aux/Markdown/markdown.md'
+ * @options.baseUrl      like file:///home/gn/Workspace/Study/mywiki.html
+ * @options.basePath     like file:///home/gn/Workspace/Study/
+ * @options.currentPath  like 1-Development-Aux/Markdown/
+ * @options.fileName     like markdown.md
+ */
+$.md.BlockLexer = function(options) {
+    this.inlineLexer = new $.md.InlineLexer(options);
     this.tokenObjs = [];
     this.isInited = false;
     this.script = '';
     this.style = '';
-    this.title = 'mywiki';
+    this.title = '';
+    this.baseUrl = options.baseUrl && options.baseUrl || '';
+    this.basePath = options.basePath && options.basePath || '';
+    this.currentPath = options.currentPath && options.currentPath || '';
     this.init();
 };
 
@@ -1078,8 +1105,8 @@ function recover_char(src) {
               .replace(/&fyh;/g, '`');
 }
 
-$.md.marked = function(src) {
-    var Lexer = new $.md.BlockLexer(),
+$.md.marked = function(src, options) {
+    var Lexer = new $.md.BlockLexer(options),
         uglyHtml = '';
     try {
         src = replace_char(src);
@@ -1088,6 +1115,7 @@ $.md.marked = function(src) {
         $.md.style = $.md.style || '';
         $.md.script += Lexer.script;
         $.md.style += Lexer.style;
+        $.md.title = $.md.title || Lexer.title;
         return recover_char(uglyHtml);
     } catch (e) {
         return `<p>An error occured:</p><pre>${e.message}</pre>`;
@@ -1103,8 +1131,8 @@ $.md.marked = function(src) {
 /**
  * toc.js Table Of Contents
  */
-$.toc = function() {
-
+$.toc = function(title) {
+    this.title = title || '';
 };
 
 /**
@@ -1175,7 +1203,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
     extract_head_recursive(root, hes);
     tableOfContents = list(root.children);
 
-    return `<aside id="toc">${tableOfContents}</aside>`;
+    return `<aside id="toc"><p id="toctitle">${this.title}</p>${tableOfContents}</aside>`;
 };
 
 /**
@@ -1267,26 +1295,26 @@ $.md.stages.stage('init').subscribe( function( done ) {
 } );
 
 $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
-    console.time('load ' + $.md.mainHref);
     $.ajax( {
-        url: $.md.mainHref,
+        url: $.md.mainPage,
         dataType: 'text'
     } ).done( function( data ) {
-        console.timeEnd('load ' + $.md.mainHref);
         $.md.mdText = data;
-        console.log('Get ' + $.md.mainHref);
     } ).fail( function() {
-        console.log('Could not get ' + $.md.mainHref);
+        console.log('Could not get ' + $.md.mainPage);
     } ).always( function() {
         done();
     } );
 } );
 
 $.md.stages.stage('transform').subscribe( function( done ) {
+    $.md.options = {
+        baseUrl: $.md.baseUrl,
+        basePath: $.md.basePath,
+        currentPath: $.md.currentPath
+    };
 
-    console.time('mardked '+$.md.mainHref);
-    $.md.htmlText = $.md.marked($.md.mdText);
-    console.timeEnd('mardked '+$.md.mainHref);
+    $.md.htmlText = $.md.marked($.md.mdText, $.md.options);
 
     // Handle up to 3 nests
     loadExternalIncludes().always( function() {
@@ -1300,7 +1328,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
-    var toc = new $.toc();
+    var toc = new $.toc($.md.title);
     $.md.tocHtml = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
@@ -1326,22 +1354,18 @@ function loadExternalIncludes() {
         });
     }
 
-    var includeLinks = findExternalIncludes ($mdHtml);
-    var dfd = $.DeferredCount(includeLinks.length);
+    var includeLinks = findExternalIncludes ($mdHtml),
+        dfd = $.DeferredCount(includeLinks.length);
 
     includeLinks.each( function( i, e ) {
-        var $el = $(e);
-        var href = $el.attr('href');
-        var text = $el.toptext();
-        console.time('load ' + href);
+        var $el = $(e),
+            href = $el.attr('href'),
+            text = $el.toptext();
         $.ajax( {
             url: href,
             dataType: 'text'
         } ).done( function( data ) {
-            console.timeEnd('load ' + href);
-            console.time('marked ' + href);
-            var $html = $($.md.marked(data));
-            console.timeEnd('marked ' + href);
+            var $html = $($.md.marked(data, $.md.options));
             $html.insertAfter($el);
             $el.remove();
             $.md.htmlText = $mdHtml.html();
@@ -1354,65 +1378,60 @@ function loadExternalIncludes() {
 }
 
 function extractHashData() {
+    var href = window.location.href,
+        hash = window.location.hash,
+        pos = -1;
+
+    pos = href.indexOf('#!');
+    $.md.baseUrl = href.substring(0, pos);
+
+    pos = $.md.baseUrl.lastIndexOf('/');
+    $.md.basePath = $.md.baseUrl.substring(0, pos + 1);
+
     // first char is the # or #!
-    var href;
-    if (window.location.hash.startsWith('#!')) {
-        href = window.location.hash.substring(2);
-    } else {
-        href = window.location.hash.substring(1);
-    }
-    href = decodeURIComponent(href);
+    hash = hash.startsWith('#!') ? hash.substring(2) : hash.substring(1);
+    hash = decodeURIComponent(hash);
+
     // extract possible in-page anchor
-    let ex_pos = href.indexOf('#');
-    if (ex_pos !== -1) {
-        $.md.inPageAnchor = href.substring(ex_pos + 1);
-        $.md.mainHref = href.substring(0, ex_pos);
-    } else {
-        $.md.inPageAnchor = '';
-        $.md.mainHref = href;
-    }
+    pos = hash.indexOf('#');
+    $.md.anchor = (pos !== -1) ? hash.substring(pos + 1) : '';
+    $.md.mainPage = (pos !== -1) ? hash.substring(0, pos) : hash;
 
-    ex_pos = $.md.mainHref.lastIndexOf('/');
-    if(ex_pos === -1)
-        $.md.href = '';
-    else
-        $.md.href = $.md.mainHref.substring(0, ex_pos + 1);
+    pos = $.md.mainPage.lastIndexOf('/');
+    $.md.currentPath = (pos !== -1) ? $.md.mainPage.substring(0, pos + 1) : '';
 
-    let len = window.location.href.indexOf('#!');
-    $.md.baseUrl = window.location.href.substring(0, len);
-    len = $.md.baseUrl.lastIndexOf('/');
-    $.md.basePath = $.md.baseUrl.substring(0, len + 1);
-    console.log('href: ' + $.md.href);
-    console.log('base url: ' + $.md.baseUrl);
-    console.log('main page: ' + $.md.mainHref);
+    console.log('window.location.href: ' + window.location.href);
+    console.log('window.location.hash: ' + window.location.hash);
+    console.log('baseUrl: ' + $.md.baseUrl);
+    console.log('basePath: ' + $.md.basePath);
+    console.log('currentPath: ' + $.md.currentPath);
+    console.log('mainPage: ' + $.md.mainPage);
+    console.log('anchor: ' + $.md.anchor);
 }
 
-function appendDefaultFilenameToHash () {
-    var newHashString = '';
-    var currentHashString = window.location.hash || '';
-    if (currentHashString === '' ||
-        currentHashString === '#'||
-        currentHashString === '#!')
-    {
-        newHashString = '#!index.md';
+function appendDefaultFilenameToHash() {
+    var newHash = '',
+        hash = window.location.hash || '';
+    if(hash === '' || hash === '#' || hash === '#!') {
+        newHash = '#!index.md';
+    } else if(hash.startsWith ('#!') && hash.endsWith('/')) {
+        newHash += 'index.md';
     }
-    else if (currentHashString.startsWith ('#!') &&
-                currentHashString.endsWith('/')
-            ) {
-        newHashString = currentHashString + 'index.md';
+
+    // redefine the default new hash
+    if(newHash) {
+        window.location.hash = newHash;
     }
-    if (newHashString)
-        window.location.hash = newHashString;
 }
 
-$(document).ready(function () {
+$(document).ready( function () {
     console.time('all time');
     appendDefaultFilenameToHash();
     extractHashData();
 
-    $(window).bind('hashchange', function () {
+    $(window).bind('hashchange', function() {
         window.location.reload(false);
-    });
+    } );
 
     $.md.stages.run().done( function() {
         console.log('all done');
