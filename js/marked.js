@@ -133,6 +133,8 @@ $.md.InlineLexer.prototype.compile = function(src) {
     return out;
 };
 
+//----------------------------------------------------------------------------------------------------------------------
+
 function replace(regex, opt) {
     regex = regex.source;
     opt = opt || '';
@@ -448,8 +450,10 @@ $.md.BlockLexer = function(options) {
     this.init();
 };
 
-// Register token object
-// @tokenObj { rule: regular, hanle: func(self, cap) }
+/**
+ * Register token object
+ * @tokenObj { rule: regular, hanle: func(self, cap) }
+ */ 
 $.md.BlockLexer.prototype.register = function(tokenObj) {
     this.tokenObjs.push(tokenObj);
 };
@@ -473,9 +477,11 @@ $.md.BlockLexer.prototype.init = function() {
     this.isInited = true;
 };
 
-// BlockLexer compile
-// @src     markdown plain text
-// @return  html text
+/**
+ * BlockLexer compile
+ * @src     markdown plain text
+ * @return  html text
+ */
 $.md.BlockLexer.prototype.compile = function(src) {
     src = src.replace(/\r\n|\r/g, '\n')
              .replace(/\t/g, '    ')
@@ -499,6 +505,69 @@ $.md.BlockLexer.prototype.compile = function(src) {
     }
 
     return uglyHtml;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+var preproc_include = function(self, src) {
+    function loadIncludeFile(path) {
+        
+    }
+
+    return src;
+};
+
+var preproc_replace = function(self, src) {
+    src = src.replace(/\r\n|\r/g, '\n')
+             .replace(/\t/g, '    ')
+             .replace(/\u00a0/g, ' ')  // unicode的不间断空格\u00A0,主要用在office中,让一个单词在结尾处不会换行显示,快捷键ctrl+shift+space
+             .replace(/\u2424/g, '\n') // Javascript Escape
+             .replace(/^ +$/gm, '');
+    return src;
+};
+
+/**
+ * Prepare Process
+ * for example, the url is 'file:///home/gn/Workspace/Study/mywiki.html#!1-Development-Aux/Markdown/markdown.md'
+ * @options.baseUrl      like file:///home/gn/Workspace/Study/mywiki.html
+ * @options.basePath     like file:///home/gn/Workspace/Study/
+ * @options.currentPath  like 1-Development-Aux/Markdown/
+ */
+$.md.PreProcess = function(options) {
+    this.handles = [];
+    this.isInited = false;
+    this.baseUrl = options.baseUrl && options.baseUrl || '';
+    this.basePath = options.basePath && options.basePath || '';
+    this.currentPath = options.currentPath && options.currentPath || '';
+}
+
+/**
+ * Register handle object
+ * @hanle function(self, src)
+ */
+$.md.PreProcess.prototype.register = function(hanle) {
+    this.handles.push(hanle);
+};
+
+// PreProcess init
+$.md.PreProcess.prototype.init = function() {
+    if(this.isInited)
+        return;
+    this.register(preproc_include);
+    this.register(preproc_replace);
+    this.isInited = true;
+};
+
+/**
+ * PreProcess compile
+ * @src     markdown plain text
+ * @return  markdown plain text
+ */
+$.md.PreProcess.prototype.process = function(src) {
+    for(var func of self.handles) {
+        src = func(this, src);
+    }
+    return src;
 };
 
 function replace_char(src) {
