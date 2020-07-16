@@ -81,6 +81,7 @@ above output.
 
 ## 2. 扩展语法
 
+`$`
 
 - 包含其它markdown
 

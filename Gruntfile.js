@@ -1,6 +1,6 @@
 var createHtml = function (grunt, taskname) {
     'use strict';
-    let conf = grunt.config('createhtml')[taskname],
+    var conf = grunt.config('createhtml')[taskname],
         tmpl = grunt.file.read(conf.template);
 
     grunt.config.set('templatesString', '');
@@ -15,31 +15,81 @@ var createHtml = function (grunt, taskname) {
 module.exports = function(grunt) {
     'use strict';
   
-    grunt.initConfig({
+    grunt.initConfig( {
         pkg: grunt.file.readJSON('package.json'),
-        // Our own css and js
-        ownCss: 'css/mycss.css',
+        // Our own css
+        ownCss: [
+            'css/mycss.css',
+        ],
+
+        // Our own js
         ownJs: [
             'js/init.js',
             'js/util.js',
             'js/stage.js',
+            'js/include.js',
             'js/marked.js',
             'js/toc.js',
             'js/main.js',
         ],
 
-        // lib css and js
-        libCss: [ ],
-        libCssMin: [ ],
+        // lib css
+        libCss: [ 
+            'lib/prism/prism.css',
+        ],
 
+        libCssMin: [
+            'lib/prism/prism.min.css',
+        ],
+
+        // lib js
         libJs: [
-            'lib/js/jquery-3.5.0.js',
-        ],
-        libJsMin: [
-            'lib/js/jquery-3.5.0.min.js',
+            'lib/jquery/jquery-3.5.0.js',
+            'lib/prism/prism.js',
         ],
 
-        // task
+        libJsMin: [
+            'lib/jquery/jquery-3.5.0.min.js',
+            'lib/prism/prism.min.js',
+        ],
+
+        // conbine own js and own css
+        concat: {
+            options: {
+                stripBanners: true,
+                banner: '/* jshint esversion: 6 */\n',
+            },
+            js: {
+                src: '<%= ownJs %>',
+                dest: 'build/<%= pkg.name %>.js',
+            },
+            css: {
+                src: '<%= ownCss %>',
+                dest: 'build/<%= pkg.name %>.css',
+            },
+        },
+
+        // check syntax of own js
+        jshint: {
+          all: ['<%= concat.js.dest %>']
+        },
+
+        // compress js
+        uglify: {
+            options: {
+                // banner: '<%= banner %>'
+            },
+            ownjs: {
+                src: '<%= concat.js.dest %>',
+                dest: 'build/<%= pkg.name %>.min.js'
+            },
+            libjs: {
+                src: '<%= libJs %>',
+                dest: 'build/<%= pkg.name %>.min.js'
+            }
+        },
+
+        // compress css
         cssmin: {
             options: {
                 stripBanners: false,   // don't allow output header text
@@ -48,31 +98,6 @@ module.exports = function(grunt) {
                 src: '<%= ownCss %>',
                 dest:'build/mycss.min.css',
             },
-        },
-
-        concat: {
-            options: {
-                stripBanners: true,
-                banner: '/* jshint esversion: 6 */\n',
-            },
-            build: {
-                src: '<%= ownJs %>',
-                dest: 'build/<%= pkg.name %>.js',
-            },
-        },
-
-        jshint: {
-          all: ['<%= concat.build.dest %>']
-        },
-
-        uglify: {
-            options: {
-                // banner: '<%= banner %>'
-            },
-            build: {
-                src: '<%= concat.build.dest %>',
-                dest: 'build/<%= pkg.name %>.min.js'
-            }
         },
 
         createhtml: {
@@ -100,7 +125,7 @@ module.exports = function(grunt) {
                 dest: '/home/gn/Workspace/Study/mywiki-debug.html',
             },
         },
-    });
+    } );
 
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-concat');

@@ -18,7 +18,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
     var $htmlObj = $(`<div>${htmlSrc}</div>`);
 
     function extract_head_recursive(parentObj, heads) {
-        if(0 === heads.length) {
+        if(0 === heads.length || parentObj === null) {
             return;
         }
 
@@ -110,6 +110,10 @@ $.toc.prototype.bindClick = function() {
 };
 
 $.toc.prototype.scrollToAnchor = function(anchorText) {
+    if(!anchorText) {
+        return;
+    }
+
     if(anchorText.slice(0, 1) === '#') {
         anchorText = anchorText.substring(1, anchorText.length);
     }

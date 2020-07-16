@@ -369,7 +369,7 @@ $.md.util.getInpageAnchorText = function (text) {
  * Return a Deferred object which will be resolved after timeout ms.
  * @timeout the unit is ms.
  */
-$.DeferredWait = function (timeout) {
+$.DeferredWait = $.DeferredWait || function (timeout) {
     return $.Deferred( function( dfd ) {
         // wait for ms to call dfd.resolve()
         setTimeout( dfd.resolve, timeout );
@@ -381,10 +381,10 @@ $.DeferredWait = function (timeout) {
  * @count the number of countDown() calls.
  * @min the bottom value of count which default is 0.
  */
-$.DeferredCount = function ( count, min ) {
+$.DeferredCount = $.DeferredCount || function ( count, min ) {
     min = min || 0;
     var dfd = $.Deferred();
-    dfd.count = count;
+    dfd.count = count || 1;
 
     if ( dfd.count <= min ) {
         dfd.resolve();
@@ -401,6 +401,22 @@ $.DeferredCount = function ( count, min ) {
         dfd.count++;
     };
     return dfd;
+};
+
+/**
+ * Return a deffered, which will check the status of condition() on ms interval
+ * @condition  if condition() return true, this deffered will resolve and the loop will be stopped.
+ * @ms         the unit is ms.
+ */
+$.DeferredInterval = $.DeferredInterval || function(condition, ms) {
+    return $.Deferred( function( dfd ) {
+        var inter = setInterval( function() {
+            if(condition()) {
+                clearInterval(inter);
+                dfd.resolve();
+            }
+        }, ms );
+    } );
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -591,6 +607,89 @@ $.Stages.prototype.run = function() {
 
 } ( jQuery ) );
 
+(function( $ ) {
+    'use strict';
+
+/**
+ * Return a deffered, which will check the status of condition() on ms interval
+ * @condition  if condition() return true, this deffered will resolve and the loop will be stopped.
+ * @ms         the unit is ms.
+ */
+$.DeferredInterval = $.DeferredInterval || function(condition, ms) {
+    return $.Deferred( function( dfd ) {
+        var inter = setInterval( function() {
+            if(condition()) {
+                clearInterval(inter);
+                dfd.resolve();
+            }
+        }, ms );
+    } );
+};
+
+$.IncludeFile = function() {
+    this.count = 0;
+    this.src = '';
+};
+
+$.IncludeFile.prototype.isdone = function() {
+    if(this.count === 0) {
+        // recover $ in src.
+        this.src = this.src.replace(/&dollar;/g, '$');
+        return true;
+    }
+    return false;
+};
+
+$.IncludeFile.prototype.process = function(path, src) {
+    var self = this;
+
+    function loadIncludeFile(path, src) {
+        var rule = /[\s\S]*?\[ *include *\]\(([^\n]*?)\)[\s\S]*?/,
+            cap;
+
+        // string.replace() regards $ as a special character.
+        src = src.replace(/\$/g, '&dollar;');
+
+        function loadFile(path, file) {
+            var pos = file.lastIndexOf('/'),
+                currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
+    
+            self.count++;
+
+            $.ajax( {
+                url: path + file,
+                dataType: 'text'
+            } ).done( function( data ) {
+                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data,
+                    replaceRule = new RegExp(`\\[ *included *\\]\\(${file}\\)`, "i");
+                // string.replace() regards $ as a special character.
+                externalSrc = externalSrc.replace(/\$/g, '&dollar;');
+                self.src = self.src.replace(replaceRule, externalSrc);
+            } ).fail( function() {
+                console.log('Could not Load ' + file);
+            } ).always( function() {
+                self.count--;
+            } );
+        }
+
+        while(true) {
+            cap = rule.exec(src);
+            if(!cap) {
+                break;
+            }
+
+            src = src.replace(/\[ *include *\]/, "[included]");
+            loadFile(path, cap[1]);
+        }
+
+        return src;
+    }
+
+    self.src = loadIncludeFile(path, src);
+};
+
+} ( jQuery ) );
+
 (function($) {
 
 'use strict';
@@ -725,6 +824,8 @@ $.md.InlineLexer.prototype.compile = function(src) {
 
     return out;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function replace(regex, opt) {
     regex = regex.source;
@@ -1041,8 +1142,10 @@ $.md.BlockLexer = function(options) {
     this.init();
 };
 
-// Register token object
-// @tokenObj { rule: regular, hanle: func(self, cap) }
+/**
+ * Register token object
+ * @tokenObj { rule: regular, hanle: func(self, cap) }
+ */ 
 $.md.BlockLexer.prototype.register = function(tokenObj) {
     this.tokenObjs.push(tokenObj);
 };
@@ -1066,9 +1169,11 @@ $.md.BlockLexer.prototype.init = function() {
     this.isInited = true;
 };
 
-// BlockLexer compile
-// @src     markdown plain text
-// @return  html text
+/**
+ * BlockLexer compile
+ * @src     markdown plain text
+ * @return  html text
+ */
 $.md.BlockLexer.prototype.compile = function(src) {
     src = src.replace(/\r\n|\r/g, '\n')
              .replace(/\t/g, '    ')
@@ -1093,6 +1198,8 @@ $.md.BlockLexer.prototype.compile = function(src) {
 
     return uglyHtml;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 function replace_char(src) {
     return src.replace(/\\\|/g, '&brvbar;')
@@ -1145,7 +1252,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
     var $htmlObj = $(`<div>${htmlSrc}</div>`);
 
     function extract_head_recursive(parentObj, heads) {
-        if(0 === heads.length) {
+        if(0 === heads.length || parentObj === null) {
             return;
         }
 
@@ -1237,6 +1344,10 @@ $.toc.prototype.bindClick = function() {
 };
 
 $.toc.prototype.scrollToAnchor = function(anchorText) {
+    if(!anchorText) {
+        return;
+    }
+
     if(anchorText.slice(0, 1) === '#') {
         anchorText = anchorText.substring(1, anchorText.length);
     }
@@ -1265,7 +1376,7 @@ $.toc.prototype.scrollToAnchor = function(anchorText) {
 var publicMethods = {};
 $.md.publicMethods = $.extend ({}, $.md.publicMethods, publicMethods);
 
-$.md.stages = new $.Stages(['init', 'loadmarkdown', 'transform', 'show']);
+$.md.stages = new $.Stages(['init', 'loadmarkdown', 'include', 'transform', 'show']);
 
 $.md.stages.stage('init').subscribe( function( done ) {
     $('#md-all').empty();
@@ -1308,6 +1419,19 @@ $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
     } );
 } );
 
+$.md.stages.stage('include').subscribe( function( done ) {
+    var include = new $.IncludeFile();
+
+    console.time('include');
+    include.process($.md.currentPath, $.md.mdText);
+
+    $.DeferredInterval(function() { return include.isdone(); }, 100).done( function() {
+        $.md.mdText = include.src;
+        done();
+        console.timeEnd('include');
+    } );
+} );
+
 $.md.stages.stage('transform').subscribe( function( done ) {
     $.md.options = {
         baseUrl: $.md.baseUrl,
@@ -1316,15 +1440,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
     };
 
     $.md.htmlText = $.md.marked($.md.mdText, $.md.options);
-
-    // Handle up to 3 nests
-    loadExternalIncludes().always( function() {
-        loadExternalIncludes().always( function() {
-            loadExternalIncludes().always( function() {
-                done();
-            } );
-        } );
-    } );
+    done();
 } );
 
 $.md.stages.stage('show').subscribe( function( done ) {
@@ -1341,43 +1457,6 @@ $.md.stages.stage('show').subscribe( function( done ) {
     toc.scrollToAnchor($.md.inPageAnchor);
     done();
 });
-
-// load [include](/foo/bar.md) external links
-function loadExternalIncludes() {
-    var $mdHtml = $(`<div>${$.md.htmlText}</div>`);
-
-    function findExternalIncludes ($html) {
-        return $html.find('a').filter (function () {
-            var href = $(this).attr('href');
-            var text = $(this).toptext();
-            var isMarkdown = $.md.util.hasMarkdownFileExtension(href);
-            var isInclude = text === 'include';
-            return isInclude && isMarkdown;
-        });
-    }
-
-    var includeLinks = findExternalIncludes ($mdHtml),
-        dfd = $.DeferredCount(includeLinks.length);
-
-    includeLinks.each( function( i, e ) {
-        var $el = $(e),
-            href = $el.attr('href'),
-            text = $el.toptext();
-        $.ajax( {
-            url: href,
-            dataType: 'text'
-        } ).done( function( data ) {
-            var $html = $($.md.marked(data, $.md.options));
-            $html.insertAfter($el);
-            $el.remove();
-            $.md.htmlText = $mdHtml.html();
-        } ).always( function() {
-            dfd.countDown();
-        } );
-    });
-
-    return dfd;
-}
 
 function extractHashData() {
     var href = window.location.href,

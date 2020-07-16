@@ -9,7 +9,7 @@
 var publicMethods = {};
 $.md.publicMethods = $.extend ({}, $.md.publicMethods, publicMethods);
 
-$.md.stages = new $.Stages(['init', 'loadmarkdown', 'transform', 'show']);
+$.md.stages = new $.Stages(['init', 'loadmarkdown', 'include', 'transform', 'show']);
 
 $.md.stages.stage('init').subscribe( function( done ) {
     $('#md-all').empty();
@@ -52,6 +52,19 @@ $.md.stages.stage('loadmarkdown').subscribe( function( done ) {
     } );
 } );
 
+$.md.stages.stage('include').subscribe( function( done ) {
+    var include = new $.IncludeFile();
+
+    console.time('include');
+    include.process($.md.currentPath, $.md.mdText);
+
+    $.DeferredInterval(function() { return include.isdone(); }, 100).done( function() {
+        $.md.mdText = include.src;
+        done();
+        console.timeEnd('include');
+    } );
+} );
+
 $.md.stages.stage('transform').subscribe( function( done ) {
     $.md.options = {
         baseUrl: $.md.baseUrl,
@@ -60,15 +73,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
     };
 
     $.md.htmlText = $.md.marked($.md.mdText, $.md.options);
-
-    // Handle up to 3 nests
-    loadExternalIncludes().always( function() {
-        loadExternalIncludes().always( function() {
-            loadExternalIncludes().always( function() {
-                done();
-            } );
-        } );
-    } );
+    done();
 } );
 
 $.md.stages.stage('show').subscribe( function( done ) {
@@ -85,43 +90,6 @@ $.md.stages.stage('show').subscribe( function( done ) {
     toc.scrollToAnchor($.md.inPageAnchor);
     done();
 });
-
-// load [include](/foo/bar.md) external links
-function loadExternalIncludes() {
-    var $mdHtml = $(`<div>${$.md.htmlText}</div>`);
-
-    function findExternalIncludes ($html) {
-        return $html.find('a').filter (function () {
-            var href = $(this).attr('href');
-            var text = $(this).toptext();
-            var isMarkdown = $.md.util.hasMarkdownFileExtension(href);
-            var isInclude = text === 'include';
-            return isInclude && isMarkdown;
-        });
-    }
-
-    var includeLinks = findExternalIncludes ($mdHtml),
-        dfd = $.DeferredCount(includeLinks.length);
-
-    includeLinks.each( function( i, e ) {
-        var $el = $(e),
-            href = $el.attr('href'),
-            text = $el.toptext();
-        $.ajax( {
-            url: href,
-            dataType: 'text'
-        } ).done( function( data ) {
-            var $html = $($.md.marked(data, $.md.options));
-            $html.insertAfter($el);
-            $el.remove();
-            $.md.htmlText = $mdHtml.html();
-        } ).always( function() {
-            dfd.countDown();
-        } );
-    });
-
-    return dfd;
-}
 
 function extractHashData() {
     var href = window.location.href,

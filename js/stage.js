@@ -6,7 +6,7 @@
  * Return a Deferred object which will be resolved after timeout ms.
  * @timeout the unit is ms.
  */
-$.DeferredWait = function (timeout) {
+$.DeferredWait = $.DeferredWait || function (timeout) {
     return $.Deferred( function( dfd ) {
         // wait for ms to call dfd.resolve()
         setTimeout( dfd.resolve, timeout );
@@ -18,10 +18,10 @@ $.DeferredWait = function (timeout) {
  * @count the number of countDown() calls.
  * @min the bottom value of count which default is 0.
  */
-$.DeferredCount = function ( count, min ) {
+$.DeferredCount = $.DeferredCount || function ( count, min ) {
     min = min || 0;
     var dfd = $.Deferred();
-    dfd.count = count;
+    dfd.count = count || 1;
 
     if ( dfd.count <= min ) {
         dfd.resolve();
@@ -38,6 +38,22 @@ $.DeferredCount = function ( count, min ) {
         dfd.count++;
     };
     return dfd;
+};
+
+/**
+ * Return a deffered, which will check the status of condition() on ms interval
+ * @condition  if condition() return true, this deffered will resolve and the loop will be stopped.
+ * @ms         the unit is ms.
+ */
+$.DeferredInterval = $.DeferredInterval || function(condition, ms) {
+    return $.Deferred( function( dfd ) {
+        var inter = setInterval( function() {
+            if(condition()) {
+                clearInterval(inter);
+                dfd.resolve();
+            }
+        }, ms );
+    } );
 };
 
 //----------------------------------------------------------------------------------------------------------------------
