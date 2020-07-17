@@ -14,13 +14,9 @@ var createHtml = function (grunt, taskname) {
 
 module.exports = function(grunt) {
     'use strict';
-  
+
     grunt.initConfig( {
         pkg: grunt.file.readJSON('package.json'),
-        // Our own css
-        ownCss: [
-            'css/mycss.css',
-        ],
 
         // Our own js
         ownJs: [
@@ -33,36 +29,42 @@ module.exports = function(grunt) {
             'js/main.js',
         ],
 
-        // lib css
-        libCss: [ 
-            'lib/prism/prism.css',
-        ],
-
-        libCssMin: [
-            'lib/prism/prism.min.css',
+        // Our own css
+        ownCss: [
+            'css/mycss.css',
         ],
 
         // lib js
         libJs: [
-            'lib/jquery/jquery-3.5.0.js',
-            'lib/prism/prism.js',
+            'lib/jquery-3.5.1.js',
+            'lib/prism.js',
         ],
 
-        libJsMin: [
-            'lib/jquery/jquery-3.5.0.min.js',
-            'lib/prism/prism.min.js',
+        // lib js min
+        libJsMin: [ ],
+
+        // lib css
+        libCss: [ 
+            'lib/prism.css',
         ],
 
-        // conbine own js and own css
+        // lib css min
+        libCssMin: [ ],
+
+        // combine own js and own css
         concat: {
-            options: {
-                stripBanners: true,
-                banner: '/* jshint esversion: 6 */\n',
-            },
+            // combine our own js
             js: {
-                src: '<%= ownJs %>',
-                dest: 'build/<%= pkg.name %>.js',
+                options: {
+                    stripBanners: true,
+                    banner: '/* jshint esversion: 6 */\n',
+                },
+                files: {
+                    src: '<%= ownJs %>',
+                    dest: 'build/<%= pkg.name %>.js',
+                },
             },
+            // combine our own css
             css: {
                 src: '<%= ownCss %>',
                 dest: 'build/<%= pkg.name %>.css',
@@ -71,22 +73,36 @@ module.exports = function(grunt) {
 
         // check syntax of own js
         jshint: {
-          all: ['<%= concat.js.dest %>']
+          all: ['<%= concat.js.files.dest %>']
         },
 
         // compress js
         uglify: {
-            options: {
-                // banner: '<%= banner %>'
-            },
+            options: { },
             ownjs: {
-                src: '<%= concat.js.dest %>',
-                dest: 'build/<%= pkg.name %>.min.js'
+                options: {
+                    mangle: true,
+                    preserveComments: 'all',
+                },
+                files: [{
+                    src: '<%= concat.js.files.dest %>',
+                    dest: 'build/<%= pkg.name %>.min.js',
+                }],
             },
             libjs: {
-                src: '<%= libJs %>',
-                dest: 'build/<%= pkg.name %>.min.js'
-            }
+                options: {
+                    mangle: false,
+                    preserveComments: 'all',
+                },
+                files: [{
+                    expand: true,
+                    src: '<%= libJs %>',
+                    dest: 'build/',
+                    rename: function (dst, src) {
+                        return dst + '/' + src.replace('.js', '.min.js');
+                    }
+                }]
+            },
         },
 
         // compress css
@@ -94,9 +110,17 @@ module.exports = function(grunt) {
             options: {
                 stripBanners: false,   // don't allow output header text
             },
-            build: {
-                src: '<%= ownCss %>',
-                dest:'build/mycss.min.css',
+            owncss: {
+                src: '<%= concat.css.dest %>',
+                dest: 'build/<%= pkg.name %>.min.css',
+            },
+            libcss: {
+                files: [{
+                    expand: true,
+                    src: '<%= libCss %>',
+                    dest: 'build/',
+                    ext: '.min.css',
+                }],
             },
         },
 
@@ -141,8 +165,8 @@ module.exports = function(grunt) {
         createHtml(grunt, 'debug');
     });
 
-    grunt.registerTask('release', ['cssmin:build', 'concat:build', 'jshint', 'uglify:build', 'createhtml_release']);
-    grunt.registerTask('debug', ['cssmin:build', 'concat:build', 'jshint', 'uglify:build', 'createhtml_debug']);
+    grunt.registerTask('release', ['concat:js', 'concat:css', 'jshint', 'uglify:ownjs', 'uglify:libjs', 'cssmin:owncss', 'cssmin:libcss', 'createhtml_release']);
+    grunt.registerTask('debug', ['concat:js', 'concat:css', 'jshint', 'createhtml_debug']);
 
     grunt.registerTask('default', ['release', 'debug']);
 };

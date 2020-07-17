@@ -6,14 +6,13 @@
 <meta name="fragment" content="!">
 <meta charset="UTF-8">
 <%
-    let task = grunt.config('currentTask').name;
+    var task = grunt.config('currentTask').name;
     grunt.log.writeln('Building single html of type: ' + task);
 
-    let ownCssFull = grunt.config('cssmin').build.src;
-    let ownCssMin = grunt.config('cssmin').build.dest;
-
-    let ownJsFull = grunt.config('concat').build.dest;
-    let ownJsMin = grunt.config('uglify').build.dest;
+    var ownJsFull = grunt.config('concat').js.files.dest,
+        ownJsMin = grunt.config('uglify').ownjs.files[0].dest,
+        ownCssFull = grunt.config('concat').css.dest,
+        ownCssMin = grunt.config('cssmin').owncss.dest;
 
     function print_script_inline(name, content) {
         if (task === 'debug')
@@ -24,6 +23,7 @@
         if (task === 'debug')
             print('<!-- END ' + name + ' -->\n');
     }
+
     function print_style_inline(name, content) {
         if (task === 'debug')
             print('<!-- START ' + name + ' -->\n');
@@ -34,28 +34,64 @@
             print('<!-- END ' + name + ' -->\n');
     }
 
-    let fileContent = '';
-    // libccsmin and libjsmin
-    for(let i = 0, len = libCssMin.length; i < len; i++) {
-        fileContent = grunt.file.read(libCssMin[i]);
-        print_style_inline(libCssMin[i], fileContent);
-    }
-    for(let i = 0, len = libJsMin.length; i < len; i++) {
-        fileContent = grunt.file.read(libJsMin[i]);
-        print_script_inline(libJsMin[i], fileContent);
-    }
+    var fileContent = '';
 
-    // Our own js code
-    if (task === 'debug') {
+    if(task === 'debug') {
+        // output libCss
+        for(let i = 0, len = libCss.length; i < len; i++) {
+            fileContent = grunt.file.read(libCss[i]);
+            print_style_inline(libCss[i], fileContent);
+        }
+
+        // output our own css 
         fileContent = grunt.file.read(ownCssFull);
         print_style_inline(ownCssFull, fileContent);
 
+        // output libJs
+        for(let i = 0, len = libJs.length; i < len; i++) {
+            fileContent = grunt.file.read(libJs[i]);
+            print_script_inline(libJs[i], fileContent);
+        }
+
+        // output our own js
         fileContent = grunt.file.read(ownJsFull);
         print_script_inline(ownJsFull, fileContent);
-    } else if (task === 'release') {
+    }
+    else if(task === 'release') {
+        // output ready libCssMin
+        for(let i = 0, len = libCssMin.length; i < len; i++) {
+            fileContent = grunt.file.read(libCssMin[i]);
+            print_style_inline(libCssMin[i], fileContent);
+        }
+
+        // output build lib css min
+        var cssDest = grunt.config('cssmin').libcss.files[0].dest,
+            ext = grunt.config('cssmin').libcss.files[0].ext;
+        for(let i = 0, len = libCss.length; i < len; i++) {
+            let pathFile = cssDest + libCss[i].replace('.css', ext);
+            fileContent = grunt.file.read(pathFile);
+            print_style_inline(pathFile, fileContent);
+        }
+
+        // output our own css min
         fileContent = grunt.file.read(ownCssMin);
         print_style_inline(ownCssMin, fileContent);
 
+        // output ready libJsMin
+        for(let i = 0, len = libJsMin.length; i < len; i++) {
+            fileContent = grunt.file.read(libJsMin[i]);
+            print_script_inline(libJsMin[i], fileContent);
+        }
+
+        // output build lib js min
+        var jsDest = grunt.config('uglify').libjs.files[0].dest;
+        for(let i = 0, len = libJs.length; i < len; i++) {
+            let pathFile = jsDest + libJs[i].replace('.js', '.min.js');
+            fileContent = grunt.file.read(pathFile);
+            print_script_inline(pathFile, fileContent);
+        }
+
+        // output our own js min
         fileContent = grunt.file.read(ownJsMin);
         print_script_inline(ownJsMin, fileContent);
     }
