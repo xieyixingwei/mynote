@@ -32,6 +32,7 @@ module.exports = function(grunt) {
         // Our own css
         ownCss: [
             'css/mycss.css',
+            'css/toc.css',
         ],
 
         // lib js
