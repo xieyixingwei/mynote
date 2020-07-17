@@ -33,6 +33,7 @@ module.exports = function(grunt) {
         ownCss: [
             'css/mycss.css',
             'css/toc.css',
+            'css/prism_patch.css',
         ],
 
         // lib js

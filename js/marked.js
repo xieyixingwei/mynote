@@ -191,7 +191,7 @@ var block_code = {
         
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<pre class="${language}"><code>${code}</code></pre>\n`;
+        return `<pre class="line-numbers ${language}"><code>${code}</code></pre>\n`;
     }
 };
 

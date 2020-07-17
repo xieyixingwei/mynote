@@ -1,0 +1,6 @@
+
+/* Disable the shadows of prism in coy theme */
+pre[class*="language-"]:before,
+pre[class*="language-"]:after {
+    display: none;
+}

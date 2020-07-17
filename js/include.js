@@ -31,31 +31,34 @@ $.IncludeFile.prototype.isdone = function() {
     return false;
 };
 
+/**
+ * load external file
+ * @path current path
+ * @src  plan text of current file
+ */
 $.IncludeFile.prototype.process = function(path, src) {
     var self = this;
 
     function loadIncludeFile(path, src) {
-        var rule = /[\s\S]*?\[ *include *\]\(([^\n]*?)\)[\s\S]*?/,
+        var rule = /\[([^\n]*?)\]\(([^\n]*?)\)/g,
             cap;
 
         // string.replace() regards $ as a special character.
         src = src.replace(/\$/g, '&dollar;');
 
-        function loadFile(path, file) {
+        function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
                 currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
-    
             self.count++;
 
             $.ajax( {
                 url: path + file,
                 dataType: 'text'
             } ).done( function( data ) {
-                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data,
-                    replaceRule = new RegExp(`\\[ *included *\\]\\(${file}\\)`, "i");
+                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data;
                 // string.replace() regards $ as a special character.
                 externalSrc = externalSrc.replace(/\$/g, '&dollar;');
-                self.src = self.src.replace(replaceRule, externalSrc);
+                self.src = self.src.replace(includeStr, externalSrc);
             } ).fail( function() {
                 console.log('Could not Load ' + file);
             } ).always( function() {
@@ -65,14 +68,17 @@ $.IncludeFile.prototype.process = function(path, src) {
 
         while(true) {
             cap = rule.exec(src);
-            if(!cap) {
+            if(cap === null) {
                 break;
             }
 
-            src = src.replace(/\[ *include *\]/, "[included]");
-            loadFile(path, cap[1]);
+            if(cap[1].trim() === 'include') {
+                loadFile(path, cap[0], cap[2]);
+            }
+            else if((!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
+                src = src.replace(cap[0], `[${cap[1]}](${path}${cap[2]})`);
+            }
         }
-
         return src;
     }
 

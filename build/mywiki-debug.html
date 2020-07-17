@@ -7,20 +7,20 @@
 <meta charset="UTF-8">
 <!-- START lib/prism.css -->
 <style id="style:lib/prism.css">/* PrismJS 1.20.0
-https://prismjs.com/download.html#themes=prism-twilight&languages=markup+css+clike+javascript+bash+c+csharp+cpp+cmake+docker+git+go+json+lua+makefile+markdown+markup-templating+matlab+objectivec+php+python+qml+ruby+sql+tcl+typescript+verilog+vhdl+yaml&plugins=line-numbers */
+https://prismjs.com/download.html#themes=prism-coy&languages=markup+css+clike+javascript+bash+c+csharp+cpp+cmake+css-extras+docker+git+go+java+json+makefile+markdown+markup-templating+matlab+objectivec+perl+php+python+qml+regex+ruby+rust+sql+swift+tcl+verilog+vhdl+yaml&plugins=line-highlight+line-numbers+inline-color */
 /**
- * prism.js Twilight theme
- * Based (more or less) on the Twilight theme originally of Textmate fame.
- * @author Remy Bach
+ * prism.js Coy theme for JavaScript, CoffeeScript, CSS and HTML
+ * Based on https://github.com/tshedor/workshop-wp-theme (Example: http://workshop.kansan.com/category/sessions/basics or http://workshop.timshedor.com/category/sessions/basics);
+ * @author Tim  Shedor
  */
+
 code[class*="language-"],
 pre[class*="language-"] {
-	color: white;
+	color: black;
 	background: none;
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	font-size: 1em;
 	text-align: left;
-	text-shadow: 0 -.1em .2em black;
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
@@ -37,108 +37,145 @@ pre[class*="language-"] {
 	hyphens: none;
 }
 
-pre[class*="language-"],
-:not(pre) > code[class*="language-"] {
-	background: hsl(0, 0%, 8%); /* #141414 */
-}
-
 /* Code blocks */
 pre[class*="language-"] {
-	border-radius: .5em;
-	border: .3em solid hsl(0, 0%, 33%); /* #282A2B */
-	box-shadow: 1px 1px .5em black inset;
+	position: relative;
 	margin: .5em 0;
+	overflow: visible;
+	padding: 0;
+}
+pre[class*="language-"]>code {
+	position: relative;
+	border-left: 10px solid #358ccb;
+	box-shadow: -1px 0px 0px 0px #358ccb, 0px 0px 0px 1px #dfdfdf;
+	background-color: #fdfdfd;
+	background-image: linear-gradient(transparent 50%, rgba(69, 142, 209, 0.04) 50%);
+	background-size: 3em 3em;
+	background-origin: content-box;
+	background-attachment: local;
+}
+
+code[class*="language-"] {
+	max-height: inherit;
+	height: inherit;
+	padding: 0 1em;
+	display: block;
 	overflow: auto;
-	padding: 1em;
 }
 
-pre[class*="language-"]::-moz-selection {
-	/* Firefox */
-	background: hsl(200, 4%, 16%); /* #282A2B */
-}
-
-pre[class*="language-"]::selection {
-	/* Safari */
-	background: hsl(200, 4%, 16%); /* #282A2B */
-}
-
-/* Text Selection colour */
-pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
-code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
-	text-shadow: none;
-	background: hsla(0, 0%, 93%, 0.15); /* #EDEDED */
-}
-
-pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
-code[class*="language-"]::selection, code[class*="language-"] ::selection {
-	text-shadow: none;
-	background: hsla(0, 0%, 93%, 0.15); /* #EDEDED */
+/* Margin bottom to accommodate shadow */
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background-color: #fdfdfd;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	margin-bottom: 1em;
 }
 
 /* Inline code */
 :not(pre) > code[class*="language-"] {
-	border-radius: .3em;
-	border: .13em solid hsl(0, 0%, 33%); /* #545454 */
-	box-shadow: 1px 1px .3em -.1em black inset;
-	padding: .15em .2em .05em;
+	position: relative;
+	padding: .2em;
+	border-radius: 0.3em;
+	color: #c92c2c;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	display: inline;
 	white-space: normal;
 }
 
+pre[class*="language-"]:before,
+pre[class*="language-"]:after {
+	content: '';
+	z-index: -2;
+	display: block;
+	position: absolute;
+	bottom: 0.75em;
+	left: 0.18em;
+	width: 40%;
+	height: 20%;
+	max-height: 13em;
+	box-shadow: 0px 13px 8px #979797;
+	-webkit-transform: rotate(-2deg);
+	-moz-transform: rotate(-2deg);
+	-ms-transform: rotate(-2deg);
+	-o-transform: rotate(-2deg);
+	transform: rotate(-2deg);
+}
+
+pre[class*="language-"]:after {
+	right: 0.75em;
+	left: auto;
+	-webkit-transform: rotate(2deg);
+	-moz-transform: rotate(2deg);
+	-ms-transform: rotate(2deg);
+	-o-transform: rotate(2deg);
+	transform: rotate(2deg);
+}
+
 .token.comment,
+.token.block-comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-	color: hsl(0, 0%, 47%); /* #777777 */
+	color: #7D8B99;
 }
 
 .token.punctuation {
-	opacity: .7;
+	color: #5F6364;
 }
 
-.token.namespace {
-	opacity: .7;
-}
-
+.token.property,
 .token.tag,
 .token.boolean,
 .token.number,
-.token.deleted {
-	color: hsl(14, 58%, 55%); /* #CF6A4C */
-}
-
-.token.keyword,
-.token.property,
-.token.selector,
+.token.function-name,
 .token.constant,
 .token.symbol,
-.token.builtin {
-	color: hsl(53, 89%, 79%); /* #F9EE98 */
+.token.deleted {
+	color: #c92c2c;
 }
 
+.token.selector,
 .token.attr-name,
-.token.attr-value,
 .token.string,
 .token.char,
+.token.function,
+.token.builtin,
+.token.inserted {
+	color: #2f9c0a;
+}
+
 .token.operator,
 .token.entity,
 .token.url,
-.language-css .token.string,
-.style .token.string,
-.token.variable,
-.token.inserted {
-	color: hsl(76, 21%, 52%); /* #8F9D6A */
+.token.variable {
+	color: #a67f59;
+	background: rgba(255, 255, 255, 0.5);
 }
 
-.token.atrule {
-	color: hsl(218, 22%, 55%); /* #7587A6 */
+.token.atrule,
+.token.attr-value,
+.token.keyword,
+.token.class-name {
+	color: #1990b8;
 }
 
 .token.regex,
 .token.important {
-	color: hsl(42, 75%, 65%); /* #E9C062 */
+	color: #e90;
 }
 
-.token.important,
+.language-css .token.string,
+.style .token.string {
+	color: #a67f59;
+	background: rgba(255, 255, 255, 0.5);
+}
+
+.token.important {
+	font-weight: normal;
+}
+
 .token.bold {
 	font-weight: bold;
 }
@@ -150,62 +187,104 @@ code[class*="language-"]::selection, code[class*="language-"] ::selection {
 	cursor: help;
 }
 
+.token.namespace {
+	opacity: .7;
+}
+
+@media screen and (max-width: 767px) {
+	pre[class*="language-"]:before,
+	pre[class*="language-"]:after {
+		bottom: 14px;
+		box-shadow: none;
+	}
+
+}
+
+/* Plugin styles: Line Numbers */
+pre[class*="language-"].line-numbers.line-numbers {
+	padding-left: 0;
+}
+
+pre[class*="language-"].line-numbers.line-numbers code {
+	padding-left: 3.8em;
+}
+
+pre[class*="language-"].line-numbers.line-numbers .line-numbers-rows {
+	left: 0;
+}
+
+/* Plugin styles: Line Highlight */
+pre[class*="language-"][data-line] {
+	padding-top: 0;
+	padding-bottom: 0;
+	padding-left: 0;
+}
+pre[data-line] code {
+	position: relative;
+	padding-left: 4em;
+}
+pre .line-highlight {
+	margin-top: 0;
+}
+
 pre[data-line] {
+	position: relative;
 	padding: 1em 0 1em 3em;
-	position: relative;
-}
-
-/* Markup */
-.language-markup .token.tag,
-.language-markup .token.attr-name,
-.language-markup .token.punctuation {
-	color: hsl(33, 33%, 52%); /* #AC885B */
-}
-
-/* Make the tokens sit above the line highlight so the colours don't look faded. */
-.token {
-	position: relative;
-	z-index: 1;
 }
 
 .line-highlight {
-	background: hsla(0, 0%, 33%, 0.25); /* #545454 */
-	background: linear-gradient(to right, hsla(0, 0%, 33%, .1) 70%, hsla(0, 0%, 33%, 0)); /* #545454 */
-	border-bottom: 1px dashed hsl(0, 0%, 33%); /* #545454 */
-	border-top: 1px dashed hsl(0, 0%, 33%); /* #545454 */
+	position: absolute;
 	left: 0;
-	line-height: inherit;
-	margin-top: 0.75em; /* Same as .prism’s padding-top */
-	padding: inherit 0;
-	pointer-events: none;
-	position: absolute;
 	right: 0;
+	padding: inherit 0;
+	margin-top: 1em; /* Same as .prism’s padding-top */
+
+	background: hsla(24, 20%, 50%,.08);
+	background: linear-gradient(to right, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
+
+	pointer-events: none;
+
+	line-height: inherit;
 	white-space: pre;
-	z-index: 0;
 }
 
-.line-highlight:before,
-.line-highlight[data-end]:after {
-	background-color: hsl(215, 15%, 59%); /* #8794A6 */
-	border-radius: 999px;
-	box-shadow: 0 1px white;
-	color: hsl(24, 20%, 95%); /* #F5F2F0 */
-	content: attr(data-start);
-	font: bold 65%/1.5 sans-serif;
-	left: .6em;
-	min-width: 1em;
-	padding: 0 .5em;
-	position: absolute;
-	text-align: center;
-	text-shadow: none;
-	top: .4em;
-	vertical-align: .3em;
+	.line-highlight:before,
+	.line-highlight[data-end]:after {
+		content: attr(data-start);
+		position: absolute;
+		top: .4em;
+		left: .6em;
+		min-width: 1em;
+		padding: 0 .5em;
+		background-color: hsla(24, 20%, 50%,.4);
+		color: hsl(24, 20%, 95%);
+		font: bold 65%/1.5 sans-serif;
+		text-align: center;
+		vertical-align: .3em;
+		border-radius: 999px;
+		text-shadow: none;
+		box-shadow: 0 1px white;
+	}
+
+	.line-highlight[data-end]:after {
+		content: attr(data-end);
+		top: auto;
+		bottom: .4em;
+	}
+
+.line-numbers .line-highlight:before,
+.line-numbers .line-highlight:after {
+	content: none;
 }
 
-.line-highlight[data-end]:after {
-	bottom: .4em;
-	content: attr(data-end);
-	top: auto;
+pre[id].linkable-line-numbers span.line-numbers-rows {
+	pointer-events: all;
+}
+pre[id].linkable-line-numbers span.line-numbers-rows > span:before {
+	cursor: pointer;
+}
+pre[id].linkable-line-numbers span.line-numbers-rows > span:hover:before {
+	background-color: rgba(128, 128, 128, .2);
 }
 
 pre[class*="language-"].line-numbers {
@@ -248,6 +327,40 @@ pre[class*="language-"].line-numbers > code {
 			padding-right: 0.8em;
 			text-align: right;
 		}
+
+span.inline-color-wrapper {
+	/*
+	 * The background image is the following SVG inline in base 64:
+	 *
+	 * <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2">
+	 *     <path fill="gray" d="M0 0h2v2H0z"/>
+	 *     <path fill="white" d="M0 0h1v1H0zM1 1h1v1H1z"/>
+	 * </svg>
+	 *
+	 * SVG-inlining explained:
+	 * https://stackoverflow.com/a/21626701/7595472
+	 */
+	background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyIDIiPjxwYXRoIGZpbGw9ImdyYXkiIGQ9Ik0wIDBoMnYySDB6Ii8+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0wIDBoMXYxSDB6TTEgMWgxdjFIMXoiLz48L3N2Zz4=");
+	/* This is to prevent visual glitches where one pixel from the repeating pattern could be seen. */
+	background-position: center;
+	background-size: 110%;
+
+	display: inline-block;
+	height: 1.333ch;
+	width: 1.333ch;
+	margin: 0 .333ch;
+	box-sizing: border-box;
+	border: 1px solid white;
+	outline: 1px solid rgba(0,0,0,.5);
+	overflow: hidden;
+}
+
+span.inline-color {
+	display: block;
+	/* To prevent visual glitches again */
+	height: 120%;
+	width: 120%;
+}
 
 </style><!-- END lib/prism.css -->
 <!-- START build/mywiki.css -->
@@ -329,10 +442,10 @@ blockquote.md {
 }
 
 .md-out {
-    background-color: #EEEEEE;
+    background-color: #F6F9FB;
     border-radius: 5px;
     padding: 10px;
-    color: #5C5964;
+    color: #2a3642;
 }
 
 code.md {
@@ -490,6 +603,13 @@ aside#toc ul.unfold {
 p#toctitle {
     color:#004285;
     font-weight: bolder;
+}
+
+
+/* Disable the shadows of prism in coy theme */
+pre[class*="language-"]:before,
+pre[class*="language-"]:after {
+    display: none;
 }
 </style><!-- END build/mywiki.css -->
 <!-- START lib/jquery-3.5.1.js -->
@@ -11369,7 +11489,7 @@ return jQuery;
 <!-- END lib/jquery-3.5.1.js -->
 <!-- START lib/prism.js -->
 <script type="text/javascript">/* PrismJS 1.20.0
-https://prismjs.com/download.html#themes=prism-twilight&languages=markup+css+clike+javascript+bash+c+csharp+cpp+cmake+docker+git+go+json+lua+makefile+markdown+markup-templating+matlab+objectivec+php+python+qml+ruby+sql+tcl+typescript+verilog+vhdl+yaml&plugins=line-numbers */
+https://prismjs.com/download.html#themes=prism-coy&languages=markup+css+clike+javascript+bash+c+csharp+cpp+cmake+css-extras+docker+git+go+java+json+makefile+markdown+markup-templating+matlab+objectivec+perl+php+python+qml+regex+ruby+rust+sql+swift+tcl+verilog+vhdl+yaml&plugins=line-highlight+line-numbers+inline-color */
 /// <reference lib="WebWorker"/>
 
 var _self = (typeof window !== 'undefined')
@@ -13580,6 +13700,123 @@ Prism.languages.cmake = {
 	'punctuation': /[()>}]|\$[<{]/
 };
 
+(function (Prism) {
+
+	var string = /("|')(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/;
+	var selectorInside;
+
+	Prism.languages.css.selector = {
+		pattern: Prism.languages.css.selector,
+		inside: selectorInside = {
+			'pseudo-element': /:(?:after|before|first-letter|first-line|selection)|::[-\w]+/,
+			'pseudo-class': /:[-\w]+/,
+			'class': /\.[-\w]+/,
+			'id': /#[-\w]+/,
+			'attribute': {
+				pattern: RegExp('\\[(?:[^[\\]"\']|' + string.source + ')*\\]'),
+				greedy: true,
+				inside: {
+					'punctuation': /^\[|\]$/,
+					'case-sensitivity': {
+						pattern: /(\s)[si]$/i,
+						lookbehind: true,
+						alias: 'keyword'
+					},
+					'namespace': {
+						pattern: /^(\s*)[-*\w\xA0-\uFFFF]*\|(?!=)/,
+						lookbehind: true,
+						inside: {
+							'punctuation': /\|$/
+						}
+					},
+					'attr-name': {
+						pattern: /^(\s*)[-\w\xA0-\uFFFF]+/,
+						lookbehind: true
+					},
+					'attr-value': [
+						string,
+						{
+							pattern: /(=\s*)[-\w\xA0-\uFFFF]+(?=\s*$)/,
+							lookbehind: true
+						}
+					],
+					'operator': /[|~*^$]?=/
+				}
+			},
+			'n-th': [
+				{
+					pattern: /(\(\s*)[+-]?\d*[\dn](?:\s*[+-]\s*\d+)?(?=\s*\))/,
+					lookbehind: true,
+					inside: {
+						'number': /[\dn]+/,
+						'operator': /[+-]/
+					}
+				},
+				{
+					pattern: /(\(\s*)(?:even|odd)(?=\s*\))/i,
+					lookbehind: true
+				}
+			],
+			'combinator': />|\+|~|\|\|/,
+
+			// the `tag` token has been existed and removed.
+			// because we can't find a perfect tokenize to match it.
+			// if you want to add it, please read https://github.com/PrismJS/prism/pull/2373 first.
+
+			'punctuation': /[(),]/,
+		}
+	};
+
+	Prism.languages.css['atrule'].inside['selector-function-argument'].inside = selectorInside;
+
+	Prism.languages.insertBefore('css', 'property', {
+		'variable': {
+			pattern: /(^|[^-\w\xA0-\uFFFF])--[-_a-z\xA0-\uFFFF][-\w\xA0-\uFFFF]*/i,
+			lookbehind: true
+		}
+	});
+
+	var unit = {
+		pattern: /(\b\d+)(?:%|[a-z]+\b)/,
+		lookbehind: true
+	};
+	// 123 -123 .123 -.123 12.3 -12.3
+	var number = {
+		pattern: /(^|[^\w.-])-?\d*\.?\d+/,
+		lookbehind: true
+	};
+
+	Prism.languages.insertBefore('css', 'function', {
+		'operator': {
+			pattern: /(\s)[+\-*\/](?=\s)/,
+			lookbehind: true
+		},
+		// CAREFUL!
+		// Previewers and Inline color use hexcode and color.
+		'hexcode': {
+			pattern: /\B#(?:[\da-f]{1,2}){3,4}\b/i,
+			alias: 'color'
+		},
+		'color': [
+			/\b(?:AliceBlue|AntiqueWhite|Aqua|Aquamarine|Azure|Beige|Bisque|Black|BlanchedAlmond|Blue|BlueViolet|Brown|BurlyWood|CadetBlue|Chartreuse|Chocolate|Coral|CornflowerBlue|Cornsilk|Crimson|Cyan|DarkBlue|DarkCyan|DarkGoldenRod|DarkGr[ae]y|DarkGreen|DarkKhaki|DarkMagenta|DarkOliveGreen|DarkOrange|DarkOrchid|DarkRed|DarkSalmon|DarkSeaGreen|DarkSlateBlue|DarkSlateGr[ae]y|DarkTurquoise|DarkViolet|DeepPink|DeepSkyBlue|DimGr[ae]y|DodgerBlue|FireBrick|FloralWhite|ForestGreen|Fuchsia|Gainsboro|GhostWhite|Gold|GoldenRod|Gr[ae]y|Green|GreenYellow|HoneyDew|HotPink|IndianRed|Indigo|Ivory|Khaki|Lavender|LavenderBlush|LawnGreen|LemonChiffon|LightBlue|LightCoral|LightCyan|LightGoldenRodYellow|LightGr[ae]y|LightGreen|LightPink|LightSalmon|LightSeaGreen|LightSkyBlue|LightSlateGr[ae]y|LightSteelBlue|LightYellow|Lime|LimeGreen|Linen|Magenta|Maroon|MediumAquaMarine|MediumBlue|MediumOrchid|MediumPurple|MediumSeaGreen|MediumSlateBlue|MediumSpringGreen|MediumTurquoise|MediumVioletRed|MidnightBlue|MintCream|MistyRose|Moccasin|NavajoWhite|Navy|OldLace|Olive|OliveDrab|Orange|OrangeRed|Orchid|PaleGoldenRod|PaleGreen|PaleTurquoise|PaleVioletRed|PapayaWhip|PeachPuff|Peru|Pink|Plum|PowderBlue|Purple|Red|RosyBrown|RoyalBlue|SaddleBrown|Salmon|SandyBrown|SeaGreen|SeaShell|Sienna|Silver|SkyBlue|SlateBlue|SlateGr[ae]y|Snow|SpringGreen|SteelBlue|Tan|Teal|Thistle|Tomato|Transparent|Turquoise|Violet|Wheat|White|WhiteSmoke|Yellow|YellowGreen)\b/i,
+			{
+				pattern: /\b(?:rgb|hsl)\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\)\B|\b(?:rgb|hsl)a\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*(?:0|0?\.\d+|1)\s*\)\B/i,
+				inside: {
+					'unit': unit,
+					'number': number,
+					'function': /[\w-]+(?=\()/,
+					'punctuation': /[(),]/
+				}
+			}
+		],
+		// it's important that there is no boundary assertion after the hex digits
+		'entity': /\\[\da-f]{1,8}/i,
+		'unit': unit,
+		'number': number
+	});
+
+})(Prism);
+
 Prism.languages.docker = {
 	'keyword': {
 		pattern: /(^\s*)(?:ADD|ARG|CMD|COPY|ENTRYPOINT|ENV|EXPOSE|FROM|HEALTHCHECK|LABEL|MAINTAINER|ONBUILD|RUN|SHELL|STOPSIGNAL|USER|VOLUME|WORKDIR)(?=\s)/mi,
@@ -13677,6 +13914,72 @@ Prism.languages.go = Prism.languages.extend('clike', {
 });
 delete Prism.languages.go['class-name'];
 
+(function (Prism) {
+
+	var keywords = /\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|exports|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|module|native|new|null|open|opens|package|private|protected|provides|public|record|requires|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|to|transient|transitive|try|uses|var|void|volatile|while|with|yield)\b/;
+
+	// based on the java naming conventions
+	var className = /\b[A-Z](?:\w*[a-z]\w*)?\b/;
+
+	Prism.languages.java = Prism.languages.extend('clike', {
+		'class-name': [
+			className,
+
+			// variables and parameters
+			// this to support class names (or generic parameters) which do not contain a lower case letter (also works for methods)
+			/\b[A-Z]\w*(?=\s+\w+\s*[;,=())])/
+		],
+		'keyword': keywords,
+		'function': [
+			Prism.languages.clike.function,
+			{
+				pattern: /(\:\:)[a-z_]\w*/,
+				lookbehind: true
+			}
+		],
+		'number': /\b0b[01][01_]*L?\b|\b0x[\da-f_]*\.?[\da-f_p+-]+\b|(?:\b\d[\d_]*\.?[\d_]*|\B\.\d[\d_]*)(?:e[+-]?\d[\d_]*)?[dfl]?/i,
+		'operator': {
+			pattern: /(^|[^.])(?:<<=?|>>>?=?|->|--|\+\+|&&|\|\||::|[?:~]|[-+*/%&|^!=<>]=?)/m,
+			lookbehind: true
+		}
+	});
+
+	Prism.languages.insertBefore('java', 'string', {
+		'triple-quoted-string': {
+			// http://openjdk.java.net/jeps/355#Description
+			pattern: /"""[ \t]*[\r\n](?:(?:"|"")?(?:\\.|[^"\\]))*"""/,
+			greedy: true,
+			alias: 'string'
+		}
+	});
+
+	Prism.languages.insertBefore('java', 'class-name', {
+		'annotation': {
+			alias: 'punctuation',
+			pattern: /(^|[^.])@\w+/,
+			lookbehind: true
+		},
+		'namespace': {
+			pattern: RegExp(
+				/(\b(?:exports|import(?:\s+static)?|module|open|opens|package|provides|requires|to|transitive|uses|with)\s+)(?!<keyword>)[a-z]\w*(?:\.[a-z]\w*)*\.?/
+					.source.replace(/<keyword>/g, function () { return keywords.source; })),
+			lookbehind: true,
+			inside: {
+				'punctuation': /\./,
+			}
+		},
+		'generics': {
+			pattern: /<(?:[\w\s,.&?]|<(?:[\w\s,.&?]|<(?:[\w\s,.&?]|<[\w\s,.&?]*>)*>)*>)*>/,
+			inside: {
+				'class-name': className,
+				'keyword': keywords,
+				'punctuation': /[<>(),.:]/,
+				'operator': /[?&|]/
+			}
+		}
+	});
+}(Prism));
+
 // https://www.json.org/json-en.html
 Prism.languages.json = {
 	'property': {
@@ -13700,26 +14003,6 @@ Prism.languages.json = {
 
 Prism.languages.webmanifest = Prism.languages.json;
 
-Prism.languages.lua = {
-	'comment': /^#!.+|--(?:\[(=*)\[[\s\S]*?\]\1\]|.*)/m,
-	// \z may be used to skip the following space
-	'string': {
-		pattern: /(["'])(?:(?!\1)[^\\\r\n]|\\z(?:\r\n|\s)|\\(?:\r\n|[\s\S]))*\1|\[(=*)\[[\s\S]*?\]\2\]/,
-		greedy: true
-	},
-	'number': /\b0x[a-f\d]+\.?[a-f\d]*(?:p[+-]?\d+)?\b|\b\d+(?:\.\B|\.?\d*(?:e[+-]?\d+)?\b)|\B\.\d+(?:e[+-]?\d+)?\b/i,
-	'keyword': /\b(?:and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while)\b/,
-	'function': /(?!\d)\w+(?=\s*(?:[({]))/,
-	'operator': [
-		/[-+*%^&|#]|\/\/?|<[<=]?|>[>=]?|[=~]=?/,
-		{
-			// Match ".." but don't break "..."
-			pattern: /(^|[^.])\.\.(?!\.)/,
-			lookbehind: true
-		}
-	],
-	'punctuation': /[\[\](){},;]|\.+|:+/
-};
 Prism.languages.makefile = {
 	'comment': {
 		pattern: /(^|[^\\])#(?:\\(?:\r\n|[\s\S])|[^\\\r\n])*/,
@@ -14244,6 +14527,198 @@ Prism.languages.objectivec = Prism.languages.extend('c', {
 delete Prism.languages.objectivec['class-name'];
 
 Prism.languages.objc = Prism.languages.objectivec;
+Prism.languages.perl = {
+	'comment': [
+		{
+			// POD
+			pattern: /(^\s*)=\w+[\s\S]*?=cut.*/m,
+			lookbehind: true
+		},
+		{
+			pattern: /(^|[^\\$])#.*/,
+			lookbehind: true
+		}
+	],
+	// TODO Could be nice to handle Heredoc too.
+	'string': [
+		// q/.../
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s*([^a-zA-Z0-9\s{(\[<])(?:(?!\1)[^\\]|\\[\s\S])*\1/,
+			greedy: true
+		},
+
+		// q a...a
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s+([a-zA-Z0-9])(?:(?!\1)[^\\]|\\[\s\S])*\1/,
+			greedy: true
+		},
+
+		// q(...)
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s*\((?:[^()\\]|\\[\s\S])*\)/,
+			greedy: true
+		},
+
+		// q{...}
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s*\{(?:[^{}\\]|\\[\s\S])*\}/,
+			greedy: true
+		},
+
+		// q[...]
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s*\[(?:[^[\]\\]|\\[\s\S])*\]/,
+			greedy: true
+		},
+
+		// q<...>
+		{
+			pattern: /\b(?:q|qq|qx|qw)\s*<(?:[^<>\\]|\\[\s\S])*>/,
+			greedy: true
+		},
+
+		// "...", `...`
+		{
+			pattern: /("|`)(?:(?!\1)[^\\]|\\[\s\S])*\1/,
+			greedy: true
+		},
+
+		// '...'
+		// FIXME Multi-line single-quoted strings are not supported as they would break variables containing '
+		{
+			pattern: /'(?:[^'\\\r\n]|\\.)*'/,
+			greedy: true
+		}
+	],
+	'regex': [
+		// m/.../
+		{
+			pattern: /\b(?:m|qr)\s*([^a-zA-Z0-9\s{(\[<])(?:(?!\1)[^\\]|\\[\s\S])*\1[msixpodualngc]*/,
+			greedy: true
+		},
+
+		// m a...a
+		{
+			pattern: /\b(?:m|qr)\s+([a-zA-Z0-9])(?:(?!\1)[^\\]|\\[\s\S])*\1[msixpodualngc]*/,
+			greedy: true
+		},
+
+		// m(...)
+		{
+			pattern: /\b(?:m|qr)\s*\((?:[^()\\]|\\[\s\S])*\)[msixpodualngc]*/,
+			greedy: true
+		},
+
+		// m{...}
+		{
+			pattern: /\b(?:m|qr)\s*\{(?:[^{}\\]|\\[\s\S])*\}[msixpodualngc]*/,
+			greedy: true
+		},
+
+		// m[...]
+		{
+			pattern: /\b(?:m|qr)\s*\[(?:[^[\]\\]|\\[\s\S])*\][msixpodualngc]*/,
+			greedy: true
+		},
+
+		// m<...>
+		{
+			pattern: /\b(?:m|qr)\s*<(?:[^<>\\]|\\[\s\S])*>[msixpodualngc]*/,
+			greedy: true
+		},
+
+		// The lookbehinds prevent -s from breaking
+		// FIXME We don't handle change of separator like s(...)[...]
+		// s/.../.../
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s*([^a-zA-Z0-9\s{(\[<])(?:(?!\2)[^\\]|\\[\s\S])*\2(?:(?!\2)[^\\]|\\[\s\S])*\2[msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// s a...a...a
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s+([a-zA-Z0-9])(?:(?!\2)[^\\]|\\[\s\S])*\2(?:(?!\2)[^\\]|\\[\s\S])*\2[msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// s(...)(...)
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s*\((?:[^()\\]|\\[\s\S])*\)\s*\((?:[^()\\]|\\[\s\S])*\)[msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// s{...}{...}
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s*\{(?:[^{}\\]|\\[\s\S])*\}\s*\{(?:[^{}\\]|\\[\s\S])*\}[msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// s[...][...]
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s*\[(?:[^[\]\\]|\\[\s\S])*\]\s*\[(?:[^[\]\\]|\\[\s\S])*\][msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// s<...><...>
+		{
+			pattern: /(^|[^-]\b)(?:s|tr|y)\s*<(?:[^<>\\]|\\[\s\S])*>\s*<(?:[^<>\\]|\\[\s\S])*>[msixpodualngcer]*/,
+			lookbehind: true,
+			greedy: true
+		},
+
+		// /.../
+		// The look-ahead tries to prevent two divisions on
+		// the same line from being highlighted as regex.
+		// This does not support multi-line regex.
+		{
+			pattern: /\/(?:[^\/\\\r\n]|\\.)*\/[msixpodualngc]*(?=\s*(?:$|[\r\n,.;})&|\-+*~<>!?^]|(?:lt|gt|le|ge|eq|ne|cmp|not|and|or|xor|x)\b))/,
+			greedy: true
+		}
+	],
+
+	// FIXME Not sure about the handling of ::, ', and #
+	'variable': [
+		// ${^POSTMATCH}
+		/[&*$@%]\{\^[A-Z]+\}/,
+		// $^V
+		/[&*$@%]\^[A-Z_]/,
+		// ${...}
+		/[&*$@%]#?(?=\{)/,
+		// $foo
+		/[&*$@%]#?(?:(?:::)*'?(?!\d)[\w$]+)+(?:::)*/i,
+		// $1
+		/[&*$@%]\d+/,
+		// $_, @_, %!
+		// The negative lookahead prevents from breaking the %= operator
+		/(?!%=)[$@%][!"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]/
+	],
+	'filehandle': {
+		// <>, <FOO>, _
+		pattern: /<(?![<=])\S*>|\b_\b/,
+		alias: 'symbol'
+	},
+	'vstring': {
+		// v1.2, 1.2.3
+		pattern: /v\d+(?:\.\d+)*|\d+(?:\.\d+){2,}/,
+		alias: 'string'
+	},
+	'function': {
+		pattern: /sub [a-z0-9_]+/i,
+		inside: {
+			keyword: /sub/
+		}
+	},
+	'keyword': /\b(?:any|break|continue|default|delete|die|do|else|elsif|eval|for|foreach|given|goto|if|last|local|my|next|our|package|print|redo|require|return|say|state|sub|switch|undef|unless|until|use|when|while)\b/,
+	'number': /\b(?:0x[\dA-Fa-f](?:_?[\dA-Fa-f])*|0b[01](?:_?[01])*|(?:\d(?:_?\d)*)?\.?\d(?:_?\d)*(?:[Ee][+-]?\d+)?)\b/,
+	'operator': /-[rwxoRWXOezsfdlpSbctugkTBMAC]\b|\+[+=]?|-[-=>]?|\*\*?=?|\/\/?=?|=[=~>]?|~[~=]?|\|\|?=?|&&?=?|<(?:=>?|<=?)?|>>?=?|![~=]?|[%^]=?|\.(?:=|\.\.?)?|[\\?]|\bx(?:=|\b)|\b(?:lt|gt|le|ge|eq|ne|cmp|not|and|or|xor)\b/,
+	'punctuation': /[{}[\];(),:]/
+};
+
 /**
  * Original by Aaron Harun: http://aahacreative.com/2012/07/31/php-syntax-highlighting-prism/
  * Modified by Miles Johnson: http://milesj.me
@@ -14499,6 +14974,134 @@ Prism.languages.py = Prism.languages.python;
 
 }(Prism));
 
+(function (Prism) {
+
+	var specialEscape = {
+		pattern: /\\[\\(){}[\]^$+*?|.]/,
+		alias: 'escape'
+	};
+	var escape = /\\(?:x[\da-fA-F]{2}|u[\da-fA-F]{4}|u\{[\da-fA-F]+\}|c[a-zA-Z]|0[0-7]{0,2}|[123][0-7]{2}|.)/;
+	var charClass = {
+		pattern: /\.|\\[wsd]|\\p{[^{}]+}/i,
+		alias: 'class-name'
+	};
+	var charClassWithoutDot = {
+		pattern: /\\[wsd]|\\p{[^{}]+}/i,
+		alias: 'class-name'
+	};
+
+	var rangeChar = '(?:[^\\\\-]|' + escape.source + ')';
+	var range = RegExp(rangeChar + '-' + rangeChar);
+
+	// the name of a capturing group
+	var groupName = {
+		pattern: /(<|')[^<>']+(?=[>']$)/,
+		lookbehind: true,
+		alias: 'variable'
+	};
+
+	Prism.languages.regex = {
+		'charset': {
+			pattern: /((?:^|[^\\])(?:\\\\)*)\[(?:[^\\\]]|\\[\s\S])*\]/,
+			lookbehind: true,
+			inside: {
+				'charset-negation': {
+					pattern: /(^\[)\^/,
+					lookbehind: true,
+					alias: 'operator'
+				},
+				'charset-punctuation': {
+					pattern: /^\[|\]$/,
+					alias: 'punctuation'
+				},
+				'range': {
+					pattern: range,
+					inside: {
+						'escape': escape,
+						'range-punctuation': {
+							pattern: /-/,
+							alias: 'operator'
+						}
+					}
+				},
+				'special-escape': specialEscape,
+				'charclass': charClassWithoutDot,
+				'escape': escape
+			}
+		},
+		'special-escape': specialEscape,
+		'charclass': charClass,
+		'backreference': [
+			{
+				// a backreference which is not an octal escape
+				pattern: /\\(?![123][0-7]{2})[1-9]/,
+				alias: 'keyword'
+			},
+			{
+				pattern: /\\k<[^<>']+>/,
+				alias: 'keyword',
+				inside: {
+					'group-name': groupName
+				}
+			}
+		],
+		'anchor': {
+			pattern: /[$^]|\\[ABbGZz]/,
+			alias: 'function'
+		},
+		'escape': escape,
+		'group': [
+			{
+				// https://docs.oracle.com/javase/10/docs/api/java/util/regex/Pattern.html
+				// https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-language-quick-reference?view=netframework-4.7.2#grouping-constructs
+
+				// (), (?<name>), (?'name'), (?>), (?:), (?=), (?!), (?<=), (?<!), (?is-m), (?i-m:)
+				pattern: /\((?:\?(?:<[^<>']+>|'[^<>']+'|[>:]|<?[=!]|[idmnsuxU]+(?:-[idmnsuxU]+)?:?))?/,
+				alias: 'punctuation',
+				inside: {
+					'group-name': groupName
+				}
+			},
+			{
+				pattern: /\)/,
+				alias: 'punctuation'
+			}
+		],
+		'quantifier': {
+			pattern: /(?:[+*?]|\{(?:\d+,?\d*)\})[?+]?/,
+			alias: 'number'
+		},
+		'alternation': {
+			pattern: /\|/,
+			alias: 'keyword'
+		}
+	};
+
+
+	[
+		'actionscript',
+		'coffescript',
+		'flow',
+		'javascript',
+		'typescript',
+		'vala'
+	].forEach(function (lang) {
+		var grammar = Prism.languages[lang];
+		if (grammar) {
+			grammar['regex'].inside = {
+				'language-regex': {
+					pattern: /^(\/)[\s\S]+(?=\/[a-z]*$)/i,
+					lookbehind: true,
+					inside: Prism.languages.regex
+				},
+				'regex-flags': /[a-z]+$/i,
+				'regex-delimiter': /^\/|\/$/,
+			};
+		}
+	});
+
+}(Prism))
+;
 /**
  * Original by Samuel Flores
  *
@@ -14606,6 +15209,107 @@ Prism.languages.py = Prism.languages.python;
 	Prism.languages.rb = Prism.languages.ruby;
 }(Prism));
 
+(function (Prism) {
+
+	var multilineComment = /\/\*(?:[^*/]|\*(?!\/)|\/(?!\*)|<self>)*\*\//.source;
+	for (var i = 0; i < 2; i++) {
+		// support 4 levels of nested comments
+		multilineComment = multilineComment.replace(/<self>/g, function () { return multilineComment; });
+	}
+	multilineComment = multilineComment.replace(/<self>/g, function () { return /[^\s\S]/.source; });
+
+
+	Prism.languages.rust = {
+		'comment': [
+			{
+				pattern: RegExp(/(^|[^\\])/.source + multilineComment),
+				lookbehind: true,
+				greedy: true
+			},
+			{
+				pattern: /(^|[^\\:])\/\/.*/,
+				lookbehind: true,
+				greedy: true
+			}
+		],
+		'string': {
+			pattern: /b?"(?:\\[\s\S]|[^\\"])*"|b?r(#*)"(?:[^"]|"(?!\1))*"\1/,
+			greedy: true
+		},
+		'char': {
+			pattern: /b?'(?:\\(?:x[0-7][\da-fA-F]|u{(?:[\da-fA-F]_*){1,6}|.)|[^\\\r\n\t'])'/,
+			greedy: true,
+			alias: 'string'
+		},
+		'attribute': {
+			pattern: /#!?\[[^[\]]*\]/,
+			greedy: true,
+			alias: 'attr-name',
+			inside: {
+				'string': null // see below
+			}
+		},
+
+		// Closure params should not be confused with bitwise OR |
+		'closure-params': {
+			pattern: /([=(,:]\s*|\bmove\s*)\|[^|]*\||\|[^|]*\|(?=\s*(?:\{|->))/,
+			lookbehind: true,
+			greedy: true,
+			inside: {
+				'closure-punctuation': {
+					pattern: /^\||\|$/,
+					alias: 'punctuation'
+				},
+				rest: null // see below
+			}
+		},
+
+		'lifetime-annotation': {
+			pattern: /'\w+/,
+			alias: 'symbol'
+		},
+
+		'fragment-specifier': {
+			pattern: /(\$\w+:)[a-z]+/,
+			lookbehind: true,
+			alias: 'punctuation'
+		},
+		'variable': /\$\w+/,
+
+		'function-definition': {
+			pattern: /(\bfn\s*)\w+/,
+			lookbehind: true,
+			alias: 'function'
+		},
+		'keyword': [
+			// https://github.com/rust-lang/reference/blob/master/src/keywords.md
+			/\b(?:abstract|as|async|await|become|box|break|const|continue|crate|do|dyn|else|enum|extern|final|fn|for|if|impl|in|let|loop|macro|match|mod|move|mut|override|priv|pub|ref|return|self|Self|static|struct|super|trait|try|type|typeof|union|unsafe|unsized|use|virtual|where|while|yield)\b/,
+			// primitives
+			// https://doc.rust-lang.org/stable/rust-by-example/primitives.html
+			/\b(?:[ui](?:8|16|32|64|128|size)|f(?:32|64)|bool|char)\b/
+		],
+
+		// functions can technically start with an upper-case letter, but this will introduce a lot of false positives
+		// and Rust's naming conventions recommend snake_case anyway.
+		// https://doc.rust-lang.org/1.0.0/style/style/naming/README.html
+		'function': /\b[a-z_]\w*(?=\s*(?:::\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>\s*)?\()/,
+		'macro': {
+			pattern: /\w+!/,
+			alias: 'property'
+		},
+
+		// Hex, oct, bin, dec numbers with visual separators and type suffix
+		'number': /\b(?:0x[\dA-Fa-f](?:_?[\dA-Fa-f])*|0o[0-7](?:_?[0-7])*|0b[01](?:_?[01])*|(?:\d(?:_?\d)*)?\.?\d(?:_?\d)*(?:[Ee][+-]?\d+)?)(?:_?(?:[iu](?:8|16|32|64|size)?|f32|f64))?\b/,
+		'boolean': /\b(?:false|true)\b/,
+		'punctuation': /->|\.\.=|\.{1,3}|::|[{}[\];(),:]/,
+		'operator': /[-+*\/%!^]=?|=[=>]?|&[&=]?|\|[|=]?|<<?=?|>>?=?|[@?]/
+	};
+
+	Prism.languages.rust['closure-params'].inside.rest = Prism.languages.rust;
+	Prism.languages.rust['attribute'].inside['string'] = Prism.languages.rust['string'];
+
+}(Prism));
+
 Prism.languages.sql = {
 	'comment': {
 		pattern: /(^|[^\\])(?:\/\*[\s\S]*?\*\/|(?:--|\/\/|#).*)/,
@@ -14630,6 +15334,32 @@ Prism.languages.sql = {
 	'operator': /[-+*\/=%^~]|&&?|\|\|?|!=?|<(?:=>?|<|>)?|>[>=]?|\b(?:AND|BETWEEN|IN|LIKE|NOT|OR|IS|DIV|REGEXP|RLIKE|SOUNDS LIKE|XOR)\b/i,
 	'punctuation': /[;[\]()`,.]/
 };
+
+// issues: nested multiline comments
+Prism.languages.swift = Prism.languages.extend('clike', {
+	'string': {
+		pattern: /("|')(?:\\(?:\((?:[^()]|\([^)]+\))+\)|\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
+		greedy: true,
+		inside: {
+			'interpolation': {
+				pattern: /\\\((?:[^()]|\([^)]+\))+\)/,
+				inside: {
+					delimiter: {
+						pattern: /^\\\(|\)$/,
+						alias: 'variable'
+					}
+					// See rest below
+				}
+			}
+		}
+	},
+	'keyword': /\b(?:as|associativity|break|case|catch|class|continue|convenience|default|defer|deinit|didSet|do|dynamic(?:Type)?|else|enum|extension|fallthrough|final|for|func|get|guard|if|import|in|infix|init|inout|internal|is|lazy|left|let|mutating|new|none|nonmutating|operator|optional|override|postfix|precedence|prefix|private|protocol|public|repeat|required|rethrows|return|right|safe|self|Self|set|static|struct|subscript|super|switch|throws?|try|Type|typealias|unowned|unsafe|var|weak|where|while|willSet|__(?:COLUMN__|FILE__|FUNCTION__|LINE__))\b/,
+	'number': /\b(?:[\d_]+(?:\.[\de_]+)?|0x[a-f0-9_]+(?:\.[a-f0-9p_]+)?|0b[01_]+|0o[0-7_]+)\b/i,
+	'constant': /\b(?:nil|[A-Z_]{2,}|k[A-Z][A-Za-z_]+)\b/,
+	'atrule': /@\b(?:IB(?:Outlet|Designable|Action|Inspectable)|class_protocol|exported|noreturn|NS(?:Copying|Managed)|objc|UIApplicationMain|auto_closure)\b/,
+	'builtin': /\b(?:[A-Z]\S+|abs|advance|alignof(?:Value)?|assert|contains|count(?:Elements)?|debugPrint(?:ln)?|distance|drop(?:First|Last)|dump|enumerate|equal|filter|find|first|getVaList|indices|isEmpty|join|last|lexicographicalCompare|map|max(?:Element)?|min(?:Element)?|numericCast|overlaps|partition|print(?:ln)?|reduce|reflect|reverse|sizeof(?:Value)?|sort(?:ed)?|split|startsWith|stride(?:of(?:Value)?)?|suffix|swap|toDebugString|toString|transcode|underestimateCount|unsafeBitCast|with(?:ExtendedLifetime|Unsafe(?:MutablePointers?|Pointers?)|VaList))\b/
+});
+Prism.languages.swift['string'].inside['interpolation'].inside.rest = Prism.languages.swift;
 
 Prism.languages.tcl = {
 	'comment': {
@@ -14677,49 +15407,6 @@ Prism.languages.tcl = {
 	'operator': /!=?|\*\*?|==|&&?|\|\|?|<[=<]?|>[=>]?|[-+~\/%?^]|\b(?:eq|ne|in|ni)\b/,
 	'punctuation': /[{}()\[\]]/
 };
-
-(function (Prism) {
-
-	Prism.languages.typescript = Prism.languages.extend('javascript', {
-		'class-name': {
-			pattern: /(\b(?:class|extends|implements|instanceof|interface|new|type)\s+)(?!keyof\b)[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?:\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)?/,
-			lookbehind: true,
-			greedy: true,
-			inside: null // see below
-		},
-		// From JavaScript Prism keyword list and TypeScript language spec: https://github.com/Microsoft/TypeScript/blob/master/doc/spec.md#221-reserved-words
-		'keyword': /\b(?:abstract|as|asserts|async|await|break|case|catch|class|const|constructor|continue|debugger|declare|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|is|keyof|let|module|namespace|new|null|of|package|private|protected|public|readonly|return|require|set|static|super|switch|this|throw|try|type|typeof|undefined|var|void|while|with|yield)\b/,
-		'builtin': /\b(?:string|Function|any|number|boolean|Array|symbol|console|Promise|unknown|never)\b/,
-	});
-
-	// doesn't work with TS because TS is too complex
-	delete Prism.languages.typescript['parameter'];
-
-	// a version of typescript specifically for highlighting types
-	var typeInside = Prism.languages.extend('typescript', {});
-	delete typeInside['class-name'];
-
-	Prism.languages.typescript['class-name'].inside = typeInside;
-
-	Prism.languages.insertBefore('typescript', 'function', {
-		'generic-function': {
-			// e.g. foo<T extends "bar" | "baz">( ...
-			pattern: /#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*\s*<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>(?=\s*\()/,
-			greedy: true,
-			inside: {
-				'function': /^#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*/,
-				'generic': {
-					pattern: /<[\s\S]+/, // everything after the first <
-					alias: 'class-name',
-					inside: typeInside
-				}
-			}
-		}
-	});
-
-	Prism.languages.ts = Prism.languages.typescript;
-
-}(Prism));
 
 Prism.languages.verilog = {
 	'comment': /\/\/.*|\/\*[\s\S]*?\*\//,
@@ -14841,6 +15528,287 @@ Prism.languages.vhdl = {
 	Prism.languages.yml = Prism.languages.yaml;
 
 }(Prism));
+
+(function () {
+
+	if (typeof self === 'undefined' || !self.Prism || !self.document || !document.querySelector) {
+		return;
+	}
+
+	/**
+	 * @param {string} selector
+	 * @param {ParentNode} [container]
+	 * @returns {HTMLElement[]}
+	 */
+	function $$(selector, container) {
+		return Array.prototype.slice.call((container || document).querySelectorAll(selector));
+	}
+
+	/**
+	 * Returns whether the given element has the given class.
+	 *
+	 * @param {Element} element
+	 * @param {string} className
+	 * @returns {boolean}
+	 */
+	function hasClass(element, className) {
+		className = " " + className + " ";
+		return (" " + element.className + " ").replace(/[\n\t]/g, " ").indexOf(className) > -1
+	}
+
+	/**
+	 * Calls the given function.
+	 *
+	 * @param {() => any} func
+	 * @returns {void}
+	 */
+	function callFunction(func) {
+		func();
+	}
+
+	// Some browsers round the line-height, others don't.
+	// We need to test for it to position the elements properly.
+	var isLineHeightRounded = (function () {
+		var res;
+		return function () {
+			if (typeof res === 'undefined') {
+				var d = document.createElement('div');
+				d.style.fontSize = '13px';
+				d.style.lineHeight = '1.5';
+				d.style.padding = '0';
+				d.style.border = '0';
+				d.innerHTML = '&nbsp;<br />&nbsp;';
+				document.body.appendChild(d);
+				// Browsers that round the line-height should have offsetHeight === 38
+				// The others should have 39.
+				res = d.offsetHeight === 38;
+				document.body.removeChild(d);
+			}
+			return res;
+		}
+	}());
+
+	/**
+	 * Highlights the lines of the given pre.
+	 *
+	 * This function is split into a DOM measuring and mutate phase to improve performance.
+	 * The returned function mutates the DOM when called.
+	 *
+	 * @param {HTMLElement} pre
+	 * @param {string} [lines]
+	 * @param {string} [classes='']
+	 * @returns {() => void}
+	 */
+	function highlightLines(pre, lines, classes) {
+		lines = typeof lines === 'string' ? lines : pre.getAttribute('data-line');
+
+		var ranges = lines.replace(/\s+/g, '').split(',').filter(Boolean);
+		var offset = +pre.getAttribute('data-line-offset') || 0;
+
+		var parseMethod = isLineHeightRounded() ? parseInt : parseFloat;
+		var lineHeight = parseMethod(getComputedStyle(pre).lineHeight);
+		var hasLineNumbers = hasClass(pre, 'line-numbers');
+		var parentElement = hasLineNumbers ? pre : pre.querySelector('code') || pre;
+		var mutateActions = /** @type {(() => void)[]} */ ([]);
+
+		ranges.forEach(function (currentRange) {
+			var range = currentRange.split('-');
+
+			var start = +range[0];
+			var end = +range[1] || start;
+
+			/** @type {HTMLElement} */
+			var line = pre.querySelector('.line-highlight[data-range="' + currentRange + '"]') || document.createElement('div');
+
+			mutateActions.push(function () {
+				line.setAttribute('aria-hidden', 'true');
+				line.setAttribute('data-range', currentRange);
+				line.className = (classes || '') + ' line-highlight';
+			});
+
+			// if the line-numbers plugin is enabled, then there is no reason for this plugin to display the line numbers
+			if (hasLineNumbers && Prism.plugins.lineNumbers) {
+				var startNode = Prism.plugins.lineNumbers.getLine(pre, start);
+				var endNode = Prism.plugins.lineNumbers.getLine(pre, end);
+
+				if (startNode) {
+					var top = startNode.offsetTop + 'px';
+					mutateActions.push(function () {
+						line.style.top = top;
+					});
+				}
+
+				if (endNode) {
+					var height = (endNode.offsetTop - startNode.offsetTop) + endNode.offsetHeight + 'px';
+					mutateActions.push(function () {
+						line.style.height = height;
+					});
+				}
+			} else {
+				mutateActions.push(function () {
+					line.setAttribute('data-start', start);
+
+					if (end > start) {
+						line.setAttribute('data-end', end);
+					}
+
+					line.style.top = (start - offset - 1) * lineHeight + 'px';
+
+					line.textContent = new Array(end - start + 2).join(' \n');
+				});
+			}
+
+			mutateActions.push(function () {
+				// allow this to play nicely with the line-numbers plugin
+				// need to attack to pre as when line-numbers is enabled, the code tag is relatively which screws up the positioning
+				parentElement.appendChild(line);
+			});
+		});
+
+		var id = pre.id;
+		if (hasLineNumbers && id) {
+			// This implements linkable line numbers. Linkable line numbers use Line Highlight to create a link to a
+			// specific line. For this to work, the pre element has to:
+			//  1) have line numbers,
+			//  2) have the `linkable-line-numbers` class or an ascendant that has that class, and
+			//  3) have an id.
+
+			var linkableLineNumbersClass = 'linkable-line-numbers';
+			var linkableLineNumbers = false;
+			var node = pre;
+			while (node) {
+				if (hasClass(node, linkableLineNumbersClass)) {
+					linkableLineNumbers = true;
+					break;
+				}
+				node = node.parentElement;
+			}
+
+			if (linkableLineNumbers) {
+				if (!hasClass(pre, linkableLineNumbersClass)) {
+					// add class to pre
+					mutateActions.push(function () {
+						pre.className = (pre.className + ' ' + linkableLineNumbersClass).trim();
+					});
+				}
+
+				var start = parseInt(pre.getAttribute('data-start') || '1');
+
+				// iterate all line number spans
+				$$('.line-numbers-rows > span', pre).forEach(function (lineSpan, i) {
+					var lineNumber = i + start;
+					lineSpan.onclick = function () {
+						var hash = id + '.' + lineNumber;
+
+						// this will prevent scrolling since the span is obviously in view
+						scrollIntoView = false;
+						location.hash = hash;
+						setTimeout(function () {
+							scrollIntoView = true;
+						}, 1);
+					};
+				});
+			}
+		}
+
+		return function () {
+			mutateActions.forEach(callFunction);
+		};
+	}
+
+	var scrollIntoView = true;
+	function applyHash() {
+		var hash = location.hash.slice(1);
+
+		// Remove pre-existing temporary lines
+		$$('.temporary.line-highlight').forEach(function (line) {
+			line.parentNode.removeChild(line);
+		});
+
+		var range = (hash.match(/\.([\d,-]+)$/) || [, ''])[1];
+
+		if (!range || document.getElementById(hash)) {
+			return;
+		}
+
+		var id = hash.slice(0, hash.lastIndexOf('.')),
+			pre = document.getElementById(id);
+
+		if (!pre) {
+			return;
+		}
+
+		if (!pre.hasAttribute('data-line')) {
+			pre.setAttribute('data-line', '');
+		}
+
+		var mutateDom = highlightLines(pre, range, 'temporary ');
+		mutateDom();
+
+		if (scrollIntoView) {
+			document.querySelector('.temporary.line-highlight').scrollIntoView();
+		}
+	}
+
+	var fakeTimer = 0; // Hack to limit the number of times applyHash() runs
+
+	Prism.hooks.add('before-sanity-check', function (env) {
+		var pre = env.element.parentNode;
+		var lines = pre && pre.getAttribute('data-line');
+
+		if (!pre || !lines || !/pre/i.test(pre.nodeName)) {
+			return;
+		}
+
+		/*
+		 * Cleanup for other plugins (e.g. autoloader).
+		 *
+		 * Sometimes <code> blocks are highlighted multiple times. It is necessary
+		 * to cleanup any left-over tags, because the whitespace inside of the <div>
+		 * tags change the content of the <code> tag.
+		 */
+		var num = 0;
+		$$('.line-highlight', pre).forEach(function (line) {
+			num += line.textContent.length;
+			line.parentNode.removeChild(line);
+		});
+		// Remove extra whitespace
+		if (num && /^( \n)+$/.test(env.code.slice(-num))) {
+			env.code = env.code.slice(0, -num);
+		}
+	});
+
+	Prism.hooks.add('complete', function completeHook(env) {
+		var pre = env.element.parentNode;
+		var lines = pre && pre.getAttribute('data-line');
+
+		if (!pre || !lines || !/pre/i.test(pre.nodeName)) {
+			return;
+		}
+
+		clearTimeout(fakeTimer);
+
+		var hasLineNumbers = Prism.plugins.lineNumbers;
+		var isLineNumbersLoaded = env.plugins && env.plugins.lineNumbers;
+
+		if (hasClass(pre, 'line-numbers') && hasLineNumbers && !isLineNumbersLoaded) {
+			Prism.hooks.add('line-numbers', completeHook);
+		} else {
+			var mutateDom = highlightLines(pre, lines);
+			mutateDom();
+			fakeTimer = setTimeout(applyHash, 1);
+		}
+	});
+
+	window.addEventListener('hashchange', applyHash);
+	window.addEventListener('resize', function () {
+		var actions = $$('pre[data-line]').map(function (pre) {
+			return highlightLines(pre);
+		});
+		actions.forEach(callFunction);
+	});
+
+})();
 
 (function () {
 
@@ -15083,6 +16051,112 @@ Prism.languages.vhdl = {
 	Prism.hooks.add('line-numbers', function (env) {
 		env.plugins = env.plugins || {};
 		env.plugins.lineNumbers = true;
+	});
+
+}());
+
+(function () {
+
+	if (typeof self === 'undefined' || typeof Prism === 'undefined' || typeof document === 'undefined') {
+		return;
+	}
+
+	// Copied from the markup language definition
+	var HTML_TAG = /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/g;
+
+	// a regex to validate hexadecimal colors
+	var HEX_COLOR = /^#?((?:[\da-f]){3,4}|(?:[\da-f]{2}){3,4})$/i;
+
+	/**
+	 * Parses the given hexadecimal representation and returns the parsed RGBA color.
+	 *
+	 * If the format of the given string is invalid, `undefined` will be returned.
+	 * Valid formats are: `RGB`, `RGBA`, `RRGGBB`, and `RRGGBBAA`.
+	 *
+	 * Hexadecimal colors are parsed because they are not fully supported by older browsers, so converting them to
+	 * `rgba` functions improves browser compatibility.
+	 *
+	 * @param {string} hex
+	 * @returns {string | undefined}
+	 */
+	function parseHexColor(hex) {
+		var match = HEX_COLOR.exec(hex);
+		if (!match) {
+			return undefined;
+		}
+		hex = match[1]; // removes the leading "#"
+
+		// the width and number of channels
+		var channelWidth = hex.length >= 6 ? 2 : 1;
+		var channelCount = hex.length / channelWidth;
+
+		// the scale used to normalize 4bit and 8bit values
+		var scale = channelWidth == 1 ? 1 / 15 : 1 / 255;
+
+		// normalized RGBA channels
+		var channels = [];
+		for (var i = 0; i < channelCount; i++) {
+			var int = parseInt(hex.substr(i * channelWidth, channelWidth), 16);
+			channels.push(int * scale);
+		}
+		if (channelCount == 3) {
+			channels.push(1); // add alpha of 100%
+		}
+
+		// output
+		var rgb = channels.slice(0, 3).map(function (x) {
+			return String(Math.round(x * 255));
+		}).join(',');
+		var alpha = String(Number(channels[3].toFixed(3))); // easy way to round 3 decimal places
+
+		return 'rgba(' + rgb + ',' + alpha + ')';
+	}
+
+	/**
+	 * Validates the given Color using the current browser's internal implementation.
+	 *
+	 * @param {string} color
+	 * @returns {string | undefined}
+	 */
+	function validateColor(color) {
+		var s = new Option().style;
+		s.color = color;
+		return s.color ? color : undefined;
+	}
+
+	/**
+	 * An array of function which parse a given string representation of a color.
+	 *
+	 * These parser serve as validators and as a layer of compatibility to support color formats which the browser
+	 * might not support natively.
+	 *
+	 * @type {((value: string) => (string|undefined))[]}
+	 */
+	var parsers = [
+		parseHexColor,
+		validateColor
+	];
+
+
+	Prism.hooks.add('wrap', function (env) {
+		if (env.type === 'color' || env.classes.indexOf('color') >= 0) {
+			var content = env.content;
+
+			// remove all HTML tags inside
+			var rawText = content.split(HTML_TAG).join('');
+
+			var color;
+			for (var i = 0, l = parsers.length; i < l && !color; i++) {
+				color = parsers[i](rawText);
+			}
+
+			if (!color) {
+				return;
+			}
+
+			var previewElement = '<span class="inline-color-wrapper"><span class="inline-color" style="background-color:' + color + ';"></span></span>';
+			env.content = previewElement + content;
+		}
 	});
 
 }());
@@ -15477,31 +16551,34 @@ $.IncludeFile.prototype.isdone = function() {
     return false;
 };
 
+/**
+ * load external file
+ * @path current path
+ * @src  plan text of current file
+ */
 $.IncludeFile.prototype.process = function(path, src) {
     var self = this;
 
     function loadIncludeFile(path, src) {
-        var rule = /[\s\S]*?\[ *include *\]\(([^\n]*?)\)[\s\S]*?/,
+        var rule = /\[([^\n]*?)\]\(([^\n]*?)\)/g,
             cap;
 
         // string.replace() regards $ as a special character.
         src = src.replace(/\$/g, '&dollar;');
 
-        function loadFile(path, file) {
+        function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
                 currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
-    
             self.count++;
 
             $.ajax( {
                 url: path + file,
                 dataType: 'text'
             } ).done( function( data ) {
-                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data,
-                    replaceRule = new RegExp(`\\[ *included *\\]\\(${file}\\)`, "i");
+                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data;
                 // string.replace() regards $ as a special character.
                 externalSrc = externalSrc.replace(/\$/g, '&dollar;');
-                self.src = self.src.replace(replaceRule, externalSrc);
+                self.src = self.src.replace(includeStr, externalSrc);
             } ).fail( function() {
                 console.log('Could not Load ' + file);
             } ).always( function() {
@@ -15511,14 +16588,17 @@ $.IncludeFile.prototype.process = function(path, src) {
 
         while(true) {
             cap = rule.exec(src);
-            if(!cap) {
+            if(cap === null) {
                 break;
             }
 
-            src = src.replace(/\[ *include *\]/, "[included]");
-            loadFile(path, cap[1]);
+            if(cap[1].trim() === 'include') {
+                loadFile(path, cap[0], cap[2]);
+            }
+            else if((!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
+                src = src.replace(cap[0], `[${cap[1]}](${path}${cap[2]})`);
+            }
         }
-
         return src;
     }
 
@@ -15720,7 +16800,7 @@ var block_code = {
         
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<pre class="${language}"><code>${code}</code></pre>\n`;
+        return `<pre class="line-numbers ${language}"><code>${code}</code></pre>\n`;
     }
 };
 
@@ -16290,7 +17370,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
     var toc = new $.toc($.md.title);
-    $.md.tocHtml = '';//toc.generateToc($.md.htmlText);
+    $.md.tocHtml = toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
@@ -16361,7 +17441,7 @@ $(document).ready( function () {
     $.md.stages.run().done( function() {
         console.log('all done');
         console.timeEnd('all time');
-        Prism.highlightAll(true);
+        Prism.highlightAll(false);
     } );
 } );
 

@@ -3,6 +3,94 @@
 
 # wiki #
 
+
+``` html
+<p>title</p>
+<ul>
+    <li>item</li>
+</ul>
+```
+
+``` css
+p { color: red }
+```
+
+``` javascript
+var test = function() {
+
+}
+```
+
+``` c
+void main()
+{
+    int i = 0;
+    for(i = 0; i < 10; i++)
+    {
+
+    }
+}
+```
+
+``` Python
+def countdown(start):
+    n = start
+
+    def diaplay():
+        print('T-minus %d' % n)
+
+    while n > 0:
+        display()
+        n -= 1
+```
+
+``` sql
+SELECT * FROM students WHERE score >= 80 AND gender = 'M';
+```
+
+``` verilog
+module test
+    (
+    input  wire clk,
+    input  wire rst_n,
+    output wire led
+    );
+
+reg [7:0] count;
+
+always@(posedge clk or negedge rst_n)
+begin
+    if(!rst_n)
+        count <= 8'h0;
+    else 
+        count <= count + 8'h1;
+end
+
+assign led = count[7];
+
+endmodule
+```
+
+``` makefile
+first_second = Hello      
+a = first      
+b = second      
+c = $($a_$b)　　　    
+
+all:      
+    @echo $(c) 
+```
+
+``` bash
+stra=abcd
+
+if [[ "${stra}" =~ "bc" ]]; then
+    echo contain
+else
+    echo no contain
+fi
+```
+
 ```
 ---
 ***
@@ -39,9 +127,7 @@ function myFunction(){
 </style>
 
 
-``` css
-p { color: red }
-```
+
 
 
 <script>
@@ -50,11 +136,7 @@ p { color: red }
 
 this a code example.
 
-``` javascript
-var test = function() {
 
-}
-```
 ```
 outputing
 ```
@@ -88,5 +170,5 @@ above output.
 
 - 包含其它markdown
 
-[include](./include.md)
+[C++](./include.md)
 [include](./include1.md)
