@@ -9,7 +9,7 @@
     var task = grunt.config('currentTask').name;
     grunt.log.writeln('Building single html of type: ' + task);
 
-    var ownJsFull = grunt.config('concat').js.files.dest,
+    var ownJsFull = grunt.config('concat').js.files[0].dest,
         ownJsMin = grunt.config('uglify').ownjs.files[0].dest,
         ownCssFull = grunt.config('concat').css.dest,
         ownCssMin = grunt.config('cssmin').owncss.dest;

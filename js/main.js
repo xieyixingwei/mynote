@@ -79,7 +79,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
     var toc = new $.toc($.md.title);
-    $.md.tocHtml = toc.generateToc($.md.htmlText);
+    $.md.tocHtml = '';//toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
@@ -150,6 +150,7 @@ $(document).ready( function () {
     $.md.stages.run().done( function() {
         console.log('all done');
         console.timeEnd('all time');
+        Prism.highlightAll(true);
     } );
 } );
 

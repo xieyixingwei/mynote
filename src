@@ -619,9 +619,11 @@ var block_code = {
     rule: /^ *(`{3,}|~{3,}) *(\S*?) *\n([\s\S]+?)\1 *(?:\n*|$)/,
     handle: function (self, cap) {
         var code = cap[3];
+            language = cap[2]; ----
+        language = 'language-' + language.trim().toLowerCase();
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
+        return `<pre class="md"><code class="${language}">${code}</code></pre>\n`;
     }
 };
 

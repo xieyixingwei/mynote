@@ -42,9 +42,11 @@ module.exports = function(grunt) {
         ],
 
         // lib js min
+        // the min js of libJS's can't be placed in libJsMin
         libJsMin: [ ],
 
         // lib css
+        // the min css of libCss can't be placed in libCss
         libCss: [ 
             'lib/prism.css',
         ],
@@ -60,10 +62,10 @@ module.exports = function(grunt) {
                     stripBanners: true,
                     banner: '/* jshint esversion: 6 */\n',
                 },
-                files: {
+                files: [{
                     src: '<%= ownJs %>',
                     dest: 'build/<%= pkg.name %>.js',
-                },
+                }],
             },
             // combine our own css
             css: {
@@ -74,7 +76,7 @@ module.exports = function(grunt) {
 
         // check syntax of own js
         jshint: {
-          all: ['<%= concat.js.files.dest %>']
+          all: ['<%= concat.js.files[0].dest %>']
         },
 
         // compress js
@@ -86,7 +88,7 @@ module.exports = function(grunt) {
                     preserveComments: 'all',
                 },
                 files: [{
-                    src: '<%= concat.js.files.dest %>',
+                    src: '<%= concat.js.files[0].dest %>',
                     dest: 'build/<%= pkg.name %>.min.js',
                 }],
             },

@@ -181,10 +181,17 @@ var block_heading = {
 var block_code = {
     rule: /^ *(`{3,}|~{3,}) *(\S*?) *\n([\s\S]+?)\1 *(?:\n*|$)/,
     handle: function (self, cap) {
-        var code = cap[3];
+        var code = cap[3],
+            language = cap[2];
+        if(language) {
+            language = 'language-' + language.trim().toLowerCase();
+        } else {
+            language = 'md-out';
+        }
+        
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
+        return `<pre class="${language}"><code>${code}</code></pre>\n`;
     }
 };
 

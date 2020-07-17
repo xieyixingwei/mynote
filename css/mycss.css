@@ -15,16 +15,6 @@
     color: #3F5977;
 }
 
-code.md {
-    margin-left: 4px;
-    margin-right: 4px;
-    border-radius: 4px;
-    padding-left: 4px;
-    padding-right: 4px;
-    color: #B44343;
-    background-color: #EEEEEE;
-}
-
 hr.md {
     height:1px;
     margin-bottom: 16px;
@@ -85,11 +75,21 @@ blockquote.md {
     color: #7BBCDC;
 }
 
-pre.md {
+.md-out {
     background-color: #EEEEEE;
     border-radius: 5px;
     padding: 10px;
     color: #5C5964;
+}
+
+code.md {
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+    color: #B44343;
+    background-color: #EEEEEE;
 }
 
 /* table style */

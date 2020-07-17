@@ -39,6 +39,9 @@ function myFunction(){
 </style>
 
 
+``` css
+p { color: red }
+```
 
 
 <script>

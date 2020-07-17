@@ -268,16 +268,6 @@ pre[class*="language-"].line-numbers > code {
     color: #3F5977;
 }
 
-code.md {
-    margin-left: 4px;
-    margin-right: 4px;
-    border-radius: 4px;
-    padding-left: 4px;
-    padding-right: 4px;
-    color: #B44343;
-    background-color: #EEEEEE;
-}
-
 hr.md {
     height:1px;
     margin-bottom: 16px;
@@ -338,11 +328,21 @@ blockquote.md {
     color: #7BBCDC;
 }
 
-pre.md {
+.md-out {
     background-color: #EEEEEE;
     border-radius: 5px;
     padding: 10px;
     color: #5C5964;
+}
+
+code.md {
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+    color: #B44343;
+    background-color: #EEEEEE;
 }
 
 /* table style */
@@ -15710,10 +15710,17 @@ var block_heading = {
 var block_code = {
     rule: /^ *(`{3,}|~{3,}) *(\S*?) *\n([\s\S]+?)\1 *(?:\n*|$)/,
     handle: function (self, cap) {
-        var code = cap[3];
+        var code = cap[3],
+            language = cap[2];
+        if(language) {
+            language = 'language-' + language.trim().toLowerCase();
+        } else {
+            language = 'md-out';
+        }
+        
         code = code.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<pre class="md">${code}</pre>\n`;
+        return `<pre class="${language}"><code>${code}</code></pre>\n`;
     }
 };
 
@@ -16283,7 +16290,7 @@ $.md.stages.stage('transform').subscribe( function( done ) {
 $.md.stages.stage('show').subscribe( function( done ) {
     console.time('toc time');
     var toc = new $.toc($.md.title);
-    $.md.tocHtml = toc.generateToc($.md.htmlText);
+    $.md.tocHtml = '';//toc.generateToc($.md.htmlText);
     console.timeEnd('toc time');
     $('#md-content').html($.md.tocHtml + $.md.htmlText);
     $('body').append(`<script type="text/javascript">${$.md.script}<\/script>`);
@@ -16354,6 +16361,7 @@ $(document).ready( function () {
     $.md.stages.run().done( function() {
         console.log('all done');
         console.timeEnd('all time');
+        Prism.highlightAll(true);
     } );
 } );
 
