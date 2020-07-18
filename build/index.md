@@ -1,8 +1,48 @@
+# MyNote Manual #
+
+# 1. 简介
+
+`mynote.html`是使用纯javascrit+html+css实现的一个笔记网页查看工具。mynote自动将markdown格式的文本转为html。
+
+# 2. mynote的使用
+
+在开始使用mynote之前，你需要对浏览器进行设置。
 
 
-
-# wiki #
-
+mynote.html
+css
+html
+docker
+sql
+makefile
+markdown
+matlab
+tcl
+swift
+objective-c
+verilog
+VHDL
+perl
+php
+yaml
+git
+go
+yaml
+c-lick
+javascript
+python
+qml
+java
+regex
+bash+shell
+json
+java
+ruby
+rust
+C
+C#
+C++
+Cmake
 
 ``` html
 <p>title</p>
