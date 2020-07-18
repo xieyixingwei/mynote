@@ -63,12 +63,10 @@ var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
     handle: function(self, cap) {
         var href = cap[2],
-            pos = href.lastIndexOf('/'),
-            path = pos === -1 ? '' : href.slice(0, pos + 1).trim(),
             text = cap[1];
         if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
             return `<a class="md" href="${href}">${text}</a>`;
-        else if(path === self.currentPath)
+        else if(href.search(self.currentPath) !== -1)
             return `<a class="md" href="${self.baseUrl + '#!' + href}">${text}</a>`;
         else
             return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
@@ -232,8 +230,6 @@ var block_image = {
     rule: /^ *!\[([^\[\]]*)\]\(([^\n]*)\)/,
     handle: function (self, cap) {
         var src = cap[2],
-            pos = src.lastIndexOf('/'),
-            path = pos === -1 ? '' : src.slice(0, pos + 1).trim(),
             atl = cap[1],
             width = '',
             height = '',
@@ -259,7 +255,7 @@ var block_image = {
         
         if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
             src = src;
-        } else if(path === self.currentPath) {
+        } else if(src.search(self.currentPath) !== -1) {
             src = self.basePath + src;
         }
         else {
