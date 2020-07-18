@@ -63,12 +63,14 @@ var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
     handle: function(self, cap) {
         var href = cap[2],
+            pos = href.lastIndexOf('/'),
+            path = pos === -1 ? '' : href.slice(0, pos + 1).trim(),
             text = cap[1];
-        if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${self.currentPath + href}">${text}</a>`;
-        else if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
+        if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
             return `<a class="md" href="${href}">${text}</a>`;
-        else if($.md.util.hasMarkdownFileExtension(href))
+        else if(path === self.currentPath)
+            return `<a class="md" href="${self.baseUrl + '#!' + href}">${text}</a>`;
+        else
             return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
     }
 };
@@ -84,9 +86,9 @@ var inline_link = {
 $.md.InlineLexer = function(options) {
     this.tokenObjs = [];
     this.isInited = false;
-    this.baseUrl = options.baseUrl && options.baseUrl || '';
-    this.basePath = options.basePath && options.basePath || '';
-    this.currentPath = options.currentPath && options.currentPath || '';
+    this.baseUrl = options.baseUrl && options.baseUrl.trim() || '';
+    this.basePath = options.basePath && options.basePath.trim() || '';
+    this.currentPath = options.currentPath && options.currentPath.trim() || '';
     this.init();
 };
 
@@ -230,6 +232,8 @@ var block_image = {
     rule: /^ *!\[([^\[\]]*)\]\(([^\n]*)\)/,
     handle: function (self, cap) {
         var src = cap[2],
+            pos = src.lastIndexOf('/'),
+            path = pos === -1 ? '' : src.slice(0, pos + 1).trim(),
             atl = cap[1],
             width = '',
             height = '',
@@ -255,7 +259,10 @@ var block_image = {
         
         if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
             src = src;
-        } else {
+        } else if(path === self.currentPath) {
+            src = self.basePath + src;
+        }
+        else {
             src = self.basePath + self.currentPath + src;
         }
         return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
@@ -451,9 +458,9 @@ $.md.BlockLexer = function(options) {
     this.script = '';
     this.style = '';
     this.title = '';
-    this.baseUrl = options.baseUrl && options.baseUrl || '';
-    this.basePath = options.basePath && options.basePath || '';
-    this.currentPath = options.currentPath && options.currentPath || '';
+    this.baseUrl = options.baseUrl && options.baseUrl.trim() || '';
+    this.basePath = options.basePath && options.basePath.trim() || '';
+    this.currentPath = options.currentPath && options.currentPath.trim() || '';
     this.init();
 };
 

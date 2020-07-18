@@ -131,11 +131,11 @@ module.exports = function(grunt) {
         createhtml: {
           release: {
               template: 'template.tmpl',
-              dest: 'build/mywiki.html'
+              dest: 'build/mynote.html'
           },
           debug: {
               template: 'template.tmpl',
-              dest: 'build/mywiki-debug.html'
+              dest: 'build/mynote-debug.html'
           }
         },
 
@@ -144,13 +144,13 @@ module.exports = function(grunt) {
                 expand: false,
                 flatten: true,
                 src: ['build/mywiki.html' ],
-                dest: '/home/gn/Workspace/Study/mywiki.html',
+                dest: '/home/gn/Workspace/Study/mynote.html',
             },
             release_debug: {
                 expand: false,
                 flatten: true,
                 src: [ 'build/mywiki-debug.html' ],
-                dest: '/home/gn/Workspace/Study/mywiki-debug.html',
+                dest: '/home/gn/Workspace/Study/mynote-debug.html',
             },
         },
     } );

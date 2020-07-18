@@ -39,9 +39,13 @@ $.IncludeFile.prototype.isdone = function() {
 $.IncludeFile.prototype.process = function(path, src) {
     var self = this;
 
-    function loadIncludeFile(path, src) {
+    function loadIncludeFile(isInclude, path, src) {
         var rule = /\[([^\n]*?)\]\(([^\n]*?)\)/g,
             cap;
+
+        if(path.trim() === './') {
+            path = '';
+        }
 
         // string.replace() regards $ as a special character.
         src = src.replace(/\$/g, '&dollar;');
@@ -49,13 +53,18 @@ $.IncludeFile.prototype.process = function(path, src) {
         function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
                 currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
+
+            if(currentPath.trim() === './') {
+                currentPath = '';
+            }
+
             self.count++;
 
             $.ajax( {
                 url: path + file,
                 dataType: 'text'
             } ).done( function( data ) {
-                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data;
+                var externalSrc = rule.exec(data) ? loadIncludeFile(true, path + currentPath, data) : data;
                 // string.replace() regards $ as a special character.
                 externalSrc = externalSrc.replace(/\$/g, '&dollar;');
                 self.src = self.src.replace(includeStr, externalSrc);
@@ -75,14 +84,20 @@ $.IncludeFile.prototype.process = function(path, src) {
             if(cap[1].trim() === 'include') {
                 loadFile(path, cap[0], cap[2]);
             }
-            else if((!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
-                src = src.replace(cap[0], `[${cap[1]}](${path}${cap[2]})`);
+            else if(isInclude && (!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
+                var pos = cap[2].lastIndexOf('/'),
+                    currentPath = pos !== -1 ? cap[2].slice(0, pos + 1).trim() : '',
+                    file = pos !== -1 ? cap[2].slice(pos + 1).trim() : '';
+                if(currentPath === './') {
+                    currentPath = '';
+                }
+                src = src.replace(cap[0], `[${cap[1]}](${path}${currentPath}${file})`);
             }
         }
         return src;
     }
 
-    self.src = loadIncludeFile(path, src);
+    self.src = loadIncludeFile(false, path, src);
 };
 
 } ( jQuery ) );

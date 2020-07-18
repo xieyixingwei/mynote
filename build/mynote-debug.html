@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>mywiki</title>
+<title>mynote</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="fragment" content="!">
 <meta charset="UTF-8">
@@ -363,8 +363,8 @@ span.inline-color {
 }
 
 </style><!-- END lib/prism.css -->
-<!-- START build/mywiki.css -->
-<style id="style:build/mywiki.css">/* hide the main content while we assemble everything */
+<!-- START build/mynote.css -->
+<style id="style:build/mynote.css">/* hide the main content while we assemble everything */
 .md-hidden-load {
     display: none;
 }
@@ -611,7 +611,7 @@ pre[class*="language-"]:before,
 pre[class*="language-"]:after {
     display: none;
 }
-</style><!-- END build/mywiki.css -->
+</style><!-- END build/mynote.css -->
 <!-- START lib/jquery-3.5.1.js -->
 <script type="text/javascript">/*!
  * jQuery JavaScript Library v3.5.1
@@ -16163,7 +16163,7 @@ Prism.languages.vhdl = {
 
 </script>
 <!-- END lib/prism.js -->
-<!-- START build/mywiki.js -->
+<!-- START build/mynote.js -->
 <script type="text/javascript">/* jshint esversion: 6 */
 (function($) {
 'use strict';
@@ -16559,9 +16559,13 @@ $.IncludeFile.prototype.isdone = function() {
 $.IncludeFile.prototype.process = function(path, src) {
     var self = this;
 
-    function loadIncludeFile(path, src) {
+    function loadIncludeFile(isInclude, path, src) {
         var rule = /\[([^\n]*?)\]\(([^\n]*?)\)/g,
             cap;
+
+        if(path.trim() === './') {
+            path = '';
+        }
 
         // string.replace() regards $ as a special character.
         src = src.replace(/\$/g, '&dollar;');
@@ -16569,13 +16573,18 @@ $.IncludeFile.prototype.process = function(path, src) {
         function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
                 currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
+
+            if(currentPath.trim() === './') {
+                currentPath = '';
+            }
+
             self.count++;
 
             $.ajax( {
                 url: path + file,
                 dataType: 'text'
             } ).done( function( data ) {
-                var externalSrc = rule.exec(data) ? loadIncludeFile(path + currentPath, data) : data;
+                var externalSrc = rule.exec(data) ? loadIncludeFile(true, path + currentPath, data) : data;
                 // string.replace() regards $ as a special character.
                 externalSrc = externalSrc.replace(/\$/g, '&dollar;');
                 self.src = self.src.replace(includeStr, externalSrc);
@@ -16595,14 +16604,20 @@ $.IncludeFile.prototype.process = function(path, src) {
             if(cap[1].trim() === 'include') {
                 loadFile(path, cap[0], cap[2]);
             }
-            else if((!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
-                src = src.replace(cap[0], `[${cap[1]}](${path}${cap[2]})`);
+            else if(isInclude && (!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
+                var pos = cap[2].lastIndexOf('/'),
+                    currentPath = pos !== -1 ? cap[2].slice(0, pos + 1).trim() : '',
+                    file = pos !== -1 ? cap[2].slice(pos + 1).trim() : '';
+                if(currentPath === './') {
+                    currentPath = '';
+                }
+                src = src.replace(cap[0], `[${cap[1]}](${path}${currentPath}${file})`);
             }
         }
         return src;
     }
 
-    self.src = loadIncludeFile(path, src);
+    self.src = loadIncludeFile(false, path, src);
 };
 
 } ( jQuery ) );
@@ -16672,12 +16687,14 @@ var inline_link = {
     rule: /^\[([^\n]*?)\]\(([^\n]*?)\)/,
     handle: function(self, cap) {
         var href = cap[2],
+            pos = href.lastIndexOf('/'),
+            path = pos === -1 ? '' : href.slice(0, pos + 1).trim(),
             text = cap[1];
-        if(text.trim() === "include" && $.md.util.hasMarkdownFileExtension(href))
-            return `<a class="md" href="${self.currentPath + href}">${text}</a>`;
-        else if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
+        if(href.startsWith('www') || href.startsWith('http') || href.startsWith('/'))
             return `<a class="md" href="${href}">${text}</a>`;
-        else if($.md.util.hasMarkdownFileExtension(href))
+        else if(path === self.currentPath)
+            return `<a class="md" href="${self.baseUrl + '#!' + href}">${text}</a>`;
+        else
             return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
     }
 };
@@ -16693,9 +16710,9 @@ var inline_link = {
 $.md.InlineLexer = function(options) {
     this.tokenObjs = [];
     this.isInited = false;
-    this.baseUrl = options.baseUrl && options.baseUrl || '';
-    this.basePath = options.basePath && options.basePath || '';
-    this.currentPath = options.currentPath && options.currentPath || '';
+    this.baseUrl = options.baseUrl && options.baseUrl.trim() || '';
+    this.basePath = options.basePath && options.basePath.trim() || '';
+    this.currentPath = options.currentPath && options.currentPath.trim() || '';
     this.init();
 };
 
@@ -16839,6 +16856,8 @@ var block_image = {
     rule: /^ *!\[([^\[\]]*)\]\(([^\n]*)\)/,
     handle: function (self, cap) {
         var src = cap[2],
+            pos = src.lastIndexOf('/'),
+            path = pos === -1 ? '' : src.slice(0, pos + 1).trim(),
             atl = cap[1],
             width = '',
             height = '',
@@ -16864,7 +16883,10 @@ var block_image = {
         
         if(src.startsWith('www') || src.startsWith('http') || src.startsWith('/')) {
             src = src;
-        } else {
+        } else if(path === self.currentPath) {
+            src = self.basePath + src;
+        }
+        else {
             src = self.basePath + self.currentPath + src;
         }
         return `<p ${align} class="md"><img class="md" src="${src}" alt="${atl}" ${width} ${height}></p>\n`;
@@ -17060,9 +17082,9 @@ $.md.BlockLexer = function(options) {
     this.script = '';
     this.style = '';
     this.title = '';
-    this.baseUrl = options.baseUrl && options.baseUrl || '';
-    this.basePath = options.basePath && options.basePath || '';
-    this.currentPath = options.currentPath && options.currentPath || '';
+    this.baseUrl = options.baseUrl && options.baseUrl.trim() || '';
+    this.basePath = options.basePath && options.basePath.trim() || '';
+    this.currentPath = options.currentPath && options.currentPath.trim() || '';
     this.init();
 };
 
@@ -17447,7 +17469,7 @@ $(document).ready( function () {
 
 } ( jQuery ) );
 </script>
-<!-- END build/mywiki.js -->
+<!-- END build/mynote.js -->
 
 </head>
 <body>
