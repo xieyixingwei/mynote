@@ -443,7 +443,7 @@ p.md {
 blockquote.md {
     page-break-inside: avoid;
     padding:10px 20px;
-    margin:0 0 20px;
+    margin:0 0 10px;
     border-left:5px solid #3D7E9A;
     color: #7BBCDC;
 }
@@ -451,16 +451,16 @@ blockquote.md {
 blockquote.md-note {
     page-break-inside: avoid;
     border-radius: 5px;
-    padding:5px;
-    margin:0;
+    padding: 3px;
+    margin: 15px 0;
     background-color: rgb(240, 150, 77);
 }
 
 blockquote.md-tip {
     page-break-inside: avoid;
     border-radius: 5px;
-    padding:5px;
-    margin:0;
+    padding: 3px;
+    margin: 15px 0;
     background-color: rgb(162, 235, 140);
 }
 
@@ -16868,7 +16868,7 @@ var block_hr = {
 // > note
 // > tip
 var block_notetip = {
-    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n+|$)/,
+    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n|$)/,
     handle: function (self, cap) {
         var type = cap[1],
             text = cap[2];

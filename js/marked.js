@@ -228,7 +228,7 @@ var block_hr = {
 // > note
 // > tip
 var block_notetip = {
-    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n+|$)/,
+    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n|$)/,
     handle: function (self, cap) {
         var type = cap[1],
             text = cap[2];
