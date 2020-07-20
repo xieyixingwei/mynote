@@ -554,3 +554,8 @@ endmodule
 的效果如下：
 
 [include](./include2.md)
+
+
+# 4. 使用mynote和github搭建自己的在线wiki
+
+首先参见[建立github.io page](https://guides.github.com/features/pages/)建议一个github.io仓库。然后将`mynote.html`重命名为`index.html`上传到新建的仓库中。同时将`index.md`和其它`*.md`文档上传到新建的仓库中。然后只需要访问`https://你的github账号.github.io/新建仓库的名字`就可以了。
