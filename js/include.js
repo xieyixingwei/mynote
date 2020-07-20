@@ -64,7 +64,7 @@ $.IncludeFile.prototype.process = function(path, src) {
                 url: path + file,
                 dataType: 'text'
             } ).done( function( data ) {
-                var externalSrc = rule.exec(data) ? loadIncludeFile(true, path + currentPath, data) : data;
+                var externalSrc = loadIncludeFile(true, path + currentPath, data);
                 // string.replace() regards $ as a special character.
                 externalSrc = externalSrc.replace(/\$/g, '&dollar;');
                 self.src = self.src.replace(includeStr, externalSrc);
