@@ -4,14 +4,20 @@
 }
 
 #md-all {
-    margin: 0 0 2% 8%;
     padding: 0;
-    width: 70%;
+    width: 75%;
     height: 100%;
+    margin: 0;
+    position: fixed;
+    right: 0;
     font-family: "Simsun";
     font-size: 16px;
     font-weight: normal;
     line-height: 1.8;
+    overflow: auto;
+}
+
+#md-body {
     color: #3F5977;
 }
 
