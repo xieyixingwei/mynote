@@ -225,9 +225,25 @@ var block_hr = {
     }
 };
 
+// > note
+// > tip
+var block_notetip = {
+    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n+|$)/,
+    handle: function (self, cap) {
+        var type = cap[1],
+            text = cap[2];
+        if(type.indexOf('note') !== -1)
+            return `<blockquote class="md-note">${self.inlineLexer.compile(text)}</blockquote>\n`;
+        else if(type.indexOf('tip') !== -1)
+            return `<blockquote class="md-tip">${self.inlineLexer.compile(text)}</blockquote>\n`;
+        else
+            return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
+    }
+};
+
 // > blockquote
 var block_blockquote = {
-    rule: /^( *>[^\n]+(\n[^\n]+)*\n)+(?:\n|$)/,
+    rule: /^( *>[^\n]+(\n[^\n]+)*\n)+(?:\n+|$)/,
     handle: function (self, cap) {
         var text = cap[0].replace(/^ *> ?/gm, '');
         return `<blockquote class="md">${self.inlineLexer.compile(text)}</blockquote>\n`;
@@ -430,7 +446,7 @@ var block_style = {
 
 // paragraph
 var block_paragraph = {
-    rule: /^((?:[^\n]+\n?(?!title|heading|lheading|hr|blockquote|image|code|script|style))+)(?:\n+|$)/,
+    rule: /^((?:[^\n]+\n?(?!title|heading|lheading|hr|notetip|blockquote|image|code|script|style))+)(?:\n+|$)/,
     handle: function (self, cap) {
         var text = cap[0];
         return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
@@ -442,6 +458,7 @@ block_paragraph.rule = replace(block_paragraph.rule)
 ('heading', block_heading.rule)
 ('lheading', block_lheading.rule)
 ('hr', block_hr.rule)
+('notetip', block_notetip.rule)
 ('blockquote', block_blockquote.rule)
 ('image', block_image.rule)
 ('code', block_code.rule)
@@ -488,6 +505,7 @@ $.md.BlockLexer.prototype.init = function() {
     this.register(block_code);
     this.register(block_lheading);
     this.register(block_hr);
+    this.register(block_notetip);
     this.register(block_blockquote);
     this.register(block_image);
     this.register(block_table);
@@ -533,12 +551,14 @@ $.md.BlockLexer.prototype.compile = function(src) {
 function replace_char(src) {
     return src.replace(/\\\|/g, '&brvbar;')
               .replace(/\\`/g, '&fyh;')
+              .replace(/\\\\/g, '&brasl;')
               .replace(/\\</g, '&lt;')
               .replace(/\\>/g, '&gt;');
 }
 
 function recover_char(src) {
     return src.replace(/&brvbar;/g, '|')
+              .replace(/&brasl;/g, '\\')
               .replace(/&fyh;/g, '`');
 }
 

@@ -82,6 +82,22 @@ blockquote.md {
     color: #7BBCDC;
 }
 
+blockquote.md-note {
+    page-break-inside: avoid;
+    border-radius: 5px;
+    padding:5px;
+    margin:0;
+    background-color: rgb(240, 150, 77);
+}
+
+blockquote.md-tip {
+    page-break-inside: avoid;
+    border-radius: 5px;
+    padding:5px;
+    margin:0;
+    background-color: rgb(162, 235, 140);
+}
+
 .md-out {
     background-color: #F6F9FB;
     border-radius: 5px;

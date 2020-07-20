@@ -1,12 +1,12 @@
-# mywiki
+# mynote
 
-This is a markdown translation tool implemented entirely in javascript
-
-## Requirements
+[使用手册](build/index.md)
 
 [Requirements](requirements.md)
 
-## Setup envirnoment
+## 编译步骤
+
+### 建立开发环境
 
 1. First install grunt
 
@@ -21,7 +21,7 @@ $ cd mywiki/
 $ npm install
 ``` 
 
-## Build target
+### 编译目标
 
 1. run `grunt` to build the project
 
