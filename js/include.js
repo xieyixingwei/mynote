@@ -52,7 +52,7 @@ $.IncludeFile.prototype.process = function(path, src) {
 
         function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
-                currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
+                currentPath = pos !== -1 ? file.substring(0, pos + 1) : '';
 
             if(currentPath.trim() === './') {
                 currentPath = '';
@@ -86,8 +86,8 @@ $.IncludeFile.prototype.process = function(path, src) {
             }
             else if(isInclude && (!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
                 var pos = cap[2].lastIndexOf('/'),
-                    currentPath = pos !== -1 ? cap[2].slice(0, pos + 1).trim() : '',
-                    file = pos !== -1 ? cap[2].slice(pos + 1).trim() : '';
+                    currentPath = pos !== -1 ? cap[2].substring(0, pos + 1).trim() : '',
+                    file = pos !== -1 ? cap[2].substring(pos + 1).trim() : cap[2];
                 if(currentPath === './') {
                     currentPath = '';
                 }

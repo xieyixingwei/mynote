@@ -114,7 +114,7 @@ $.toc.prototype.scrollToAnchor = function(anchorText) {
         return;
     }
 
-    if(anchorText.slice(0, 1) === '#') {
+    if(anchorText.substring(0, 1) === '#') {
         anchorText = anchorText.substring(1, anchorText.length);
     }
 

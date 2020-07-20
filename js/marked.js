@@ -158,6 +158,19 @@ var block_space = {
     }
 };
 
+// # title #
+var block_title = {
+    rule: /^ *# *([^\n]+?) *# *(?:\n+|$)/,
+    handle: function (self, cap) {
+        var text = cap[1].trim();
+        if(self.title !== '') {
+            self.title = text;
+            return '';
+        }
+        return `<h1 class="md">${self.inlineLexer.compile(text)}</h1>\n`;
+    }
+};
+
 // # head level 1
 // ...
 // ###### head level 6
@@ -166,11 +179,6 @@ var block_heading = {
     handle: function (self, cap) {
         var level = cap[1].length,
             text = cap[2];
-        if($.trim(text).slice(-1) === '#' && !self.title) {
-            self.title = $.trim(text.slice(0, -1));
-            return '';
-        }
-
         return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
@@ -429,6 +437,7 @@ var block_paragraph = {
 };
 
 block_paragraph.rule = replace(block_paragraph.rule)
+('title', block_title.rule)
 ('heading', block_heading.rule)
 ('lheading', block_lheading.rule)
 ('hr', block_hr.rule)
@@ -473,6 +482,7 @@ $.md.BlockLexer.prototype.init = function() {
     if(this.isInited)
         return;
     this.register(block_space);
+    this.register(block_title);
     this.register(block_heading);
     this.register(block_code);
     this.register(block_lheading);

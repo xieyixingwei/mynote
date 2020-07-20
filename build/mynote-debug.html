@@ -16572,7 +16572,7 @@ $.IncludeFile.prototype.process = function(path, src) {
 
         function loadFile(path, includeStr, file) {
             var pos = file.lastIndexOf('/'),
-                currentPath = pos !== -1 ? file.slice(0, pos + 1) : '';
+                currentPath = pos !== -1 ? file.substring(0, pos + 1) : '';
 
             if(currentPath.trim() === './') {
                 currentPath = '';
@@ -16606,8 +16606,8 @@ $.IncludeFile.prototype.process = function(path, src) {
             }
             else if(isInclude && (!cap[2].startsWith('www')) && (!cap[2].startsWith('http')) && (!cap[2].startsWith('/'))) {
                 var pos = cap[2].lastIndexOf('/'),
-                    currentPath = pos !== -1 ? cap[2].slice(0, pos + 1).trim() : '',
-                    file = pos !== -1 ? cap[2].slice(pos + 1).trim() : '';
+                    currentPath = pos !== -1 ? cap[2].substring(0, pos + 1).trim() : '',
+                    file = pos !== -1 ? cap[2].substring(pos + 1).trim() : cap[2];
                 if(currentPath === './') {
                     currentPath = '';
                 }
@@ -16782,6 +16782,19 @@ var block_space = {
     }
 };
 
+// # title #
+var block_title = {
+    rule: /^ *# *([^\n]+?) *# *(?:\n+|$)/,
+    handle: function (self, cap) {
+        var text = cap[1].trim();
+        if(self.title !== '') {
+            self.title = text;
+            return '';
+        }
+        return `<h1 class="md">${self.inlineLexer.compile(text)}</h1>\n`;
+    }
+};
+
 // # head level 1
 // ...
 // ###### head level 6
@@ -16790,11 +16803,6 @@ var block_heading = {
     handle: function (self, cap) {
         var level = cap[1].length,
             text = cap[2];
-        if($.trim(text).slice(-1) === '#' && !self.title) {
-            self.title = $.trim(text.slice(0, -1));
-            return '';
-        }
-
         return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
@@ -17053,6 +17061,7 @@ var block_paragraph = {
 };
 
 block_paragraph.rule = replace(block_paragraph.rule)
+('title', block_title.rule)
 ('heading', block_heading.rule)
 ('lheading', block_lheading.rule)
 ('hr', block_hr.rule)
@@ -17097,6 +17106,7 @@ $.md.BlockLexer.prototype.init = function() {
     if(this.isInited)
         return;
     this.register(block_space);
+    this.register(block_title);
     this.register(block_heading);
     this.register(block_code);
     this.register(block_lheading);
@@ -17290,7 +17300,7 @@ $.toc.prototype.scrollToAnchor = function(anchorText) {
         return;
     }
 
-    if(anchorText.slice(0, 1) === '#') {
+    if(anchorText.substring(0, 1) === '#') {
         anchorText = anchorText.substring(1, anchorText.length);
     }
 
