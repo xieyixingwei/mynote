@@ -162,12 +162,13 @@ var block_space = {
 var block_title = {
     rule: /^ *# *([^\n]+?) *# *(?:\n+|$)/,
     handle: function (self, cap) {
-        var text = cap[1].trim();
-        if(self.title !== '') {
-            self.title = text;
+        var text = cap[1];
+        if(self.title === '') {
+            self.title = text.trim();
             return '';
         }
-        return `<h1 class="md">${self.inlineLexer.compile(text)}</h1>\n`;
+
+        return `<h1class="md">${self.inlineLexer.compile(text)}</h1>\n`;
     }
 };
 
@@ -178,7 +179,7 @@ var block_heading = {
     rule: /^ *(#{1,6}) *([^\n]+?) *(?:\n+|$)/,
     handle: function (self, cap) {
         var level = cap[1].length,
-            text = cap[2];
+            text = cap[2].trim();
         return `<h${level} class="md">${self.inlineLexer.compile(text)}</h${level}>\n`;
     }
 };
@@ -429,7 +430,7 @@ var block_style = {
 
 // paragraph
 var block_paragraph = {
-    rule: /^((?:[^\n]+\n?(?!heading|lheading|hr|blockquote|image|code|script|style))+)(?:\n+|$)/,
+    rule: /^((?:[^\n]+\n?(?!title|heading|lheading|hr|blockquote|image|code|script|style))+)(?:\n+|$)/,
     handle: function (self, cap) {
         var text = cap[0];
         return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
