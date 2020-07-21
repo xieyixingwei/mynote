@@ -31,11 +31,11 @@ $.toc.prototype.generateToc = function(htmlSrc) {
             obj;
 
         if(level > parentLevel) {
-            obj = {text:$h.text(), level:level, id:parentObj.id+'.'+levelStr, father: parentObj, children:[]};
+            obj = {text:$h.html(), level:level, id:parentObj.id+'.'+levelStr, father: parentObj, children:[]};
             parentObj.children.push(obj);
             extract_head_recursive(obj, heads);
         } else if(level === parentLevel) {
-            obj = {text:$h.text(), level:level, id:parentObj.father.id+'.'+levelStr, father: parentObj.father, children:[]};
+            obj = {text:$h.html(), level:level, id:parentObj.father.id+'.'+levelStr, father: parentObj.father, children:[]};
             parentObj.father.children.push(obj);
             extract_head_recursive(obj, heads);
         } else if(level < parentLevel) {
@@ -43,7 +43,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
             while(brotherObj.level !== level) {
                 brotherObj = brotherObj.father;
             }
-            obj = {text:$h.text(), level:level, id:brotherObj.father.id+'.'+levelStr, father: brotherObj.father, children:[]};
+            obj = {text:$h.html(), level:level, id:brotherObj.father.id+'.'+levelStr, father: brotherObj.father, children:[]};
             brotherObj.father.children.push(obj);
             extract_head_recursive(obj, heads);
         }
