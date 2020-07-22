@@ -103,6 +103,7 @@ blockquote.md-tip {
     border-radius: 5px;
     padding: 10px;
     color: #2a3642;
+    overflow: auto;
 }
 
 code.md {
