@@ -1,4 +1,2 @@
-# \<html\>
-
-# \<p\>
+[include](manual.md)
 

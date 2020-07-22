@@ -13,7 +13,7 @@
     font-family: "Simsun";
     font-size: 16px;
     font-weight: normal;
-    line-height: 1.8;
+    line-height: 1.4;
     overflow: auto;
 }
 
@@ -76,9 +76,9 @@ p.md {
 
 blockquote.md {
     page-break-inside: avoid;
-    padding:10px 20px;
-    margin:0 0 10px;
-    border-left:5px solid #3D7E9A;
+    padding: 5px;
+    margin: 15px 0;
+    border-left: 5px solid #3D7E9A;
     color: #7BBCDC;
 }
 

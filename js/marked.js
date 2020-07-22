@@ -228,13 +228,13 @@ var block_hr = {
 // > note
 // > tip
 var block_notetip = {
-    rule: /^ *> *(note:|tip:) *([^\n]*)(?:\n|$)/,
+    rule: /^ *(note|注意|tip|提示)([^\n]*)(?:\n|$)/,
     handle: function (self, cap) {
         var type = cap[1],
-            text = cap[2];
-        if(type.indexOf('note') !== -1)
+            text = cap[0];
+        if((type.indexOf('note') !== -1) || (type.indexOf('注意') !== -1))
             return `<blockquote class="md-note">${self.inlineLexer.compile(text)}</blockquote>\n`;
-        else if(type.indexOf('tip') !== -1)
+        else if((type.indexOf('tip') !== -1) || (type.indexOf('提示') !== -1))
             return `<blockquote class="md-tip">${self.inlineLexer.compile(text)}</blockquote>\n`;
         else
             return `<p class="md">${self.inlineLexer.compile(text)}</p>\n`;
