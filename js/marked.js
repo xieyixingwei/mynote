@@ -53,7 +53,7 @@ var inline_code = {
         var text = cap[2];
         text = text.replace(/</g, '&lt;')
                    .replace(/>/g, '&gt;');
-        return `<code class="md">${text}</code>`;
+        return `<code class="md">${self.compile(text)}</code>`;
     }
 };
 
@@ -70,6 +70,24 @@ var inline_link = {
             return `<a class="md" href="${self.baseUrl + '#!' + href}">${text}</a>`;
         else
             return `<a class="md" href="${self.baseUrl + '#!' + self.currentPath + href}">${text}</a>`;
+    }
+};
+
+// [^sup]
+var inline_sup = {
+    rule: /^ *\[\^([^\n]*?)\]/,
+    handle: function(self, cap) {
+        var text = cap[1];
+        return `<sup class="md">${text}</sup>`;
+    }
+};
+
+// [vsub]
+var inline_sub = {
+    rule: /^ *\[v([^\n]*?)\]/,
+    handle: function(self, cap) {
+        var text = cap[1];
+        return `<sub class="md">${text}</sub>`;
     }
 };
 
@@ -106,6 +124,8 @@ $.md.InlineLexer.prototype.init = function() {
     this.register(inline_code);
     this.register(inline_link);
     this.register(inline_br);
+    this.register(inline_sup);
+    this.register(inline_sub);
     this.register(inline_text);
     this.isInited = true;
 };

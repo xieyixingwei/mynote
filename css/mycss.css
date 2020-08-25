@@ -182,3 +182,7 @@ a:visited {
     text-decoration: none;
     color: rgb(58, 119, 233);
 }
+
+sup.md, sub.md {
+    font-size: 10px;
+}
