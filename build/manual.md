@@ -179,7 +179,15 @@ tip:请使用mynote。
 * a
   * aa
     * aaa
+      * aaaa
+      * aaab
     * aab
+    * aac
+  * ab
+    * aba
+      * abaa
+        * abaaa
+      * abab
 
 * a
   * aa
@@ -193,7 +201,15 @@ tip:请使用mynote。
 * a
   * aa
     * aaa
+      * aaaa
+      * aaab
     * aab
+    * aac
+  * ab
+    * aba
+      * abaa
+        * abaaa
+      * abab
 
 * a
   * aa
@@ -229,35 +245,39 @@ tip:请使用mynote。
 
 同样使用空格缩进来实现多级列表。
 
-note: 注意：列表前后至少有一个空行。
+注意：列表前后至少有一个空行。
 
 例如：
 
 ```
-1. a
+- a
     - aa
         1. aaa
         2. aab
+            - aaba
+            - aabb
+        3. aac
     - ab
     - ac
-2. b
+- b
     - ba
     - bb
-3. c
+- c
 ```
 
 的效果为：
 
-1. a
+- a
     - aa
         1. aaa
         2. aab
-    - ab
-    - ac
-2. b
+            - aaba
+            - aabb
+        3. aac
+- b
     - ba
     - bb
-3. c
+- c
 
 ## 3.12 表格
 
