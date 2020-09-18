@@ -579,13 +579,15 @@ function replace_char(src) {
               .replace(/\\`/g, '&fyh;')
               .replace(/\\\\/g, '&brasl;')
               .replace(/\\</g, '&lt;')
-              .replace(/\\>/g, '&gt;');
+              .replace(/\\>/g, '&gt;')
+              .replace(/\\\*/g, '&xinhao;');
 }
 
 function recover_char(src) {
     return src.replace(/&brvbar;/g, '|')
               .replace(/&brasl;/g, '\\')
-              .replace(/&fyh;/g, '`');
+              .replace(/&fyh;/g, '`')
+              .replace(/&xinhao;/g, '*');
 }
 
 $.md.marked = function(src, options) {
