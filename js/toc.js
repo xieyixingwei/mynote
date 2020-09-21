@@ -15,14 +15,14 @@ $.toc = function(title) {
  * @return   html which contains table of contents.
  */
 $.toc.prototype.generateToc = function(htmlSrc) {
-    var $htmlObj = $(`<div>${htmlSrc}</div>`);
+    let $htmlObj = $(`<div>${htmlSrc}</div>`);
 
     function extract_head_recursive(parentObj, heads) {
         if(0 === heads.length || parentObj === null) {
             return;
         }
 
-        var $h = $(heads.pop()),
+        let $h = $(heads.pop()),
             tagName = $h.prop("tagName"),
             levelStr = /^[hH](\d)/.exec(tagName)[1],
             level = parseInt(levelStr),
@@ -54,13 +54,13 @@ $.toc.prototype.generateToc = function(htmlSrc) {
             return '';
         }
 
-        var itemsOut = '',
+        let itemsOut = '',
             out = '<ul>&items;</ul>',
             n = 0;
 
-        for(var i of items) {
+        for(let i of items) {
             n++;
-            var tocend = n == (items.length) ? 'class="tocend"' : '',
+            let tocend = n == (items.length) ? 'class="tocend"' : '',
                 em = (i.children.length > 0) ? '<em></em>' : '';
             itemsOut += `<li ${tocend}>${em}<a href="javascript:void(0);">${$.trim(i.text)}</a>
                         ${list(i.children)}</li>`;
@@ -69,7 +69,7 @@ $.toc.prototype.generateToc = function(htmlSrc) {
         return out.replace('&items;', itemsOut);
     }
 
-    var root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]},
+    let root = {text:'Table Of Contents', level: '0', id:'anchor', father:null, children:[]},
         $hes = $htmlObj.find(':header'),
         hes = $hes.toArray().reverse(),
         tableOfContents = '';
@@ -95,7 +95,7 @@ $.toc.prototype.bindClick = function() {
 
     // bind click event on a element of toc.
     $('#toc a').on( 'click', function() {
-        var targetText = $(this).text(),
+        let targetText = $(this).text(),
             currentText = '';
         $(':header').each( function() {
             // don't use the text of any subnode
@@ -120,7 +120,7 @@ $.toc.prototype.scrollToAnchor = function(anchorText) {
 
     $(':header').each( function() {
         // don't use the text of any subnode
-        var currentText = $(this).clone().children().remove().end().text().trim();
+        let currentText = $(this).clone().children().remove().end().text().trim();
         if (currentText === anchorText) {
             this.scrollIntoView(true);
             doBreak = false;
